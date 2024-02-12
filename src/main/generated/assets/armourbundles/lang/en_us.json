@@ -1,0 +1,9 @@
+{
+  "category.armourprofiles.profiles": "Armor Profiles",
+  "item.armourbundles.armour_bundle": "Armor Bundle",
+  "item.armourprofiles.armour_bundle.profile_selected": "Selected profile %d!",
+  "item.armourprofiles.armour_bundle.profile_set": "Set profile %d!",
+  "key.armourprofiles.select.1": "Equip Profile 1",
+  "key.armourprofiles.select.2": "Equip Profile 2",
+  "key.armourprofiles.select.3": "Equip Profile 3"
+}

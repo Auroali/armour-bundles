@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "armourbundles",
+	"version": "${version}",
+	"name": "Armour Profiles",
+	"description": "Adds an item that allows quick-swapping between armour sets",
+	"authors": [
+		"Auroali"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/armourbundles/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.auroali.armourbundles.ArmourBundles"
+		],
+		"client": [
+			"com.auroali.armourbundles.ArmourBundlesClient"
+		],
+		"fabric-datagen": [
+			"com.auroali.armourbundles.ArmourBundlesDataGenerator"
+		]
+	},
+	"mixins": [
+	],
+	"depends": {
+		"fabricloader": ">=0.15.6",
+		"minecraft": "~1.19.2",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
