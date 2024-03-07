@@ -43,5 +43,6 @@
     "recipes": [
       "armourbundles:armour_bundle"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

@@ -27,6 +27,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ArmourBundle extends Item {
@@ -217,7 +218,8 @@ public class ArmourBundle extends Item {
 
         for(int i = 0; i < inv.size(); i++) {
             ItemStack comp = ItemStack.fromNbt((NbtCompound)inv.get(i));
-            if(!comp.isItemEqual(stackToRemove) )
+            // is there no more ItemStack#isItemEqual ??
+            if(!comp.isOf(stackToRemove.getItem()) || !Objects.equals(stackToRemove.getNbt(), comp.getNbt()))
                 continue;
             inv.remove(i);
             break;
@@ -238,11 +240,11 @@ public class ArmourBundle extends Item {
 
     // from minecraft's bundle impl
     private void playRemoveOneSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.method_48926().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
     }
     // from minecraft's bundle impl
     private void playInsertSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.method_48926().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
     }
 
     public static ItemStack findInInv(PlayerEntity player) {

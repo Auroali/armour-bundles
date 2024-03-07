@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
   "key": {
     "N": {
       "item": "minecraft:netherite_ingot"
@@ -15,5 +16,6 @@
   ],
   "result": {
     "item": "armourbundles:armour_bundle"
-  }
+  },
+  "show_notification": true
 }
