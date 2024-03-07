@@ -238,11 +238,11 @@ public class ArmourBundle extends Item {
 
     // from minecraft's bundle impl
     private void playRemoveOneSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.method_48926().getRandom().nextFloat() * 0.4F);
     }
     // from minecraft's bundle impl
     private void playInsertSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.method_48926().getRandom().nextFloat() * 0.4F);
     }
 
     public static ItemStack findInInv(PlayerEntity player) {
