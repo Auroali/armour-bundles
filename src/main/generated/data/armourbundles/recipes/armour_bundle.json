@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "R": {
+      "item": "minecraft:rabbit_hide"
+    }
+  },
+  "pattern": [
+    " N ",
+    "R R",
+    " R "
+  ],
+  "result": {
+    "item": "armourbundles:armour_bundle"
+  }
+}
