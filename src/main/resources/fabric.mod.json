@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "armourbundles",
 	"version": "${version}",
-	"name": "Armour Profiles",
+	"name": "Armour Bundles",
 	"description": "Adds an item that allows quick-swapping between armour sets",
 	"authors": [
 		"Auroali"
@@ -32,8 +32,5 @@
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }
