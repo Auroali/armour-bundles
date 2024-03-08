@@ -2,14 +2,14 @@
 	"schemaVersion": 1,
 	"id": "armourbundles",
 	"version": "${version}",
-	"name": "Armour Profiles",
+	"name": "Armour Bundles",
 	"description": "Adds an item that allows quick-swapping between armour sets",
 	"authors": [
 		"Auroali"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/project/armour-bundles",
+		"sources": "https://github.com/Auroali/armour-bundles"
 	},
 	"license": "MIT",
 	"icon": "assets/armourbundles/icon.png",
