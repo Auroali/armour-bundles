@@ -26,7 +26,7 @@ public class ArmourProfile {
         ItemStack itemInSlot = armorPieces[slot.ordinal()];
         // if the enchantments, name and item id are all equal then we assume they match
         return itemInSlot.getName().equals(stack.getName())
-                && itemInSlot.getItem().equals(stack.getItem())
+                && itemInSlot.isOf(stack.getItem())
                 && itemInSlot.getEnchantments().equals(stack.getEnchantments());
     }
 

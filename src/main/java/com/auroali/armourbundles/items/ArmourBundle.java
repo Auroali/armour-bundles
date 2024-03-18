@@ -219,13 +219,21 @@ public class ArmourBundle extends Item {
         for(int i = 0; i < inv.size(); i++) {
             ItemStack comp = ItemStack.fromNbt((NbtCompound)inv.get(i));
             // is there no more ItemStack#isItemEqual ??
-            if(!comp.isOf(stackToRemove.getItem()) || !Objects.equals(stackToRemove.getNbt(), comp.getNbt()))
+            // so ItemStack#isItemEqual was *not* what i was looking for anyway so this is good
+            if(!areStacksSame(stackToRemove, comp))
                 continue;
             inv.remove(i);
             break;
         }
 
         itemNbt.put("Inv", inv);
+    }
+
+    public boolean areStacksSame(ItemStack stack, ItemStack other) {
+        return stack.isOf(other.getItem())
+                && stack.getCount() == other.getCount()
+                && (!stack.isDamageable() || stack.getDamage() == other.getDamage())
+                && Objects.equals(stack.getNbt(), other.getNbt());
     }
 
     public int getItemsInBundleInv(NbtList inv) {
