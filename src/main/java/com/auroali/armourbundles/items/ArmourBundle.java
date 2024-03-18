@@ -27,6 +27,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ArmourBundle extends Item {
@@ -217,13 +218,22 @@ public class ArmourBundle extends Item {
 
         for(int i = 0; i < inv.size(); i++) {
             ItemStack comp = ItemStack.fromNbt((NbtCompound)inv.get(i));
-            if(!comp.isItemEqual(stackToRemove) )
+            // is there no more ItemStack#isItemEqual ??
+            // so ItemStack#isItemEqual was *not* what i was looking for anyway so this is good
+            if(!areStacksSame(stackToRemove, comp))
                 continue;
             inv.remove(i);
             break;
         }
 
         itemNbt.put("Inv", inv);
+    }
+
+    public boolean areStacksSame(ItemStack stack, ItemStack other) {
+        return stack.isOf(other.getItem())
+                && stack.getCount() == other.getCount()
+                && (!stack.isDamageable() || stack.getDamage() == other.getDamage())
+                && Objects.equals(stack.getNbt(), other.getNbt());
     }
 
     public int getItemsInBundleInv(NbtList inv) {
