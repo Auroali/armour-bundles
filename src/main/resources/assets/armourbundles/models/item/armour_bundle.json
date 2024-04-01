@@ -1,0 +1,9 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "armourbundles:item/armour_bundle"
+  },
+  "overrides": [
+    { "predicate": { "filled": 0.0000001 }, "model": "armourbundles:item/armour_bundle_filled" }
+  ]
+}

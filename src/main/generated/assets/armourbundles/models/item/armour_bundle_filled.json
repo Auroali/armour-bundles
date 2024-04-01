@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "armourbundles:item/armour_bundle"
+    "layer0": "armourbundles:item/armour_bundle_filled"
   }
 }
