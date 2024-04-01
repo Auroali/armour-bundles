@@ -4,9 +4,18 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.data.client.BlockStateModelGenerator;
 import net.minecraft.data.client.ItemModelGenerator;
 import net.minecraft.data.client.Models;
+import net.minecraft.data.server.recipe.RecipeJsonProvider;
+import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.util.registry.Registry;
+
+import java.util.function.Consumer;
 
 public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 	@Override
@@ -14,6 +23,7 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 		fabricDataGenerator.addProvider(new ABLangGen(fabricDataGenerator));
 		fabricDataGenerator.addProvider(new ABModelGen(fabricDataGenerator));
 		fabricDataGenerator.addProvider(new ABRecipeGenerator(fabricDataGenerator));
+		fabricDataGenerator.addProvider(new ABTagGenerator(fabricDataGenerator));
 	}
 
 	public static class ABLangGen extends FabricLanguageProvider {
@@ -45,7 +55,7 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 
 		@Override
 		public void generateItemModels(ItemModelGenerator itemModelGenerator) {
-			itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED);
+			itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, "_filled", Models.GENERATED);
 		}
 	}
 
@@ -65,6 +75,19 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 					.input('R', Items.RABBIT_HIDE)
 					.input('N', Items.NETHERITE_INGOT)
 					.offerTo(exporter);
+		}
+	}
+
+	public static class ABTagGenerator extends FabricTagProvider<Item> {
+		public ABTagGenerator(FabricDataGenerator dataGenerator) {
+			super(dataGenerator, Registry.ITEM);
+		}
+
+		@Override
+		protected void generateTags() {
+			getOrCreateTagBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
+					.add(Items.ELYTRA)
+					.add(Items.CARVED_PUMPKIN);
 		}
 	}
 }
