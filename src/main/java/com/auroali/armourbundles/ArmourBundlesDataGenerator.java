@@ -6,27 +6,33 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.data.client.BlockStateModelGenerator;
 import net.minecraft.data.client.ItemModelGenerator;
 import net.minecraft.data.client.Models;
 import net.minecraft.data.server.recipe.RecipeJsonProvider;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 	@Override
 	public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
 		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
-		pack.addProvider(APLangGen::new);
-		pack.addProvider(APModelGen::new);
-		pack.addProvider(APRecipeGenerator::new);
+		pack.addProvider(ABLangGen::new);
+		pack.addProvider(ABModelGen::new);
+		pack.addProvider(ABRecipeGenerator::new);
+		pack.addProvider(ABTagGenerator::new);
 	}
 
-	public static class APLangGen extends FabricLanguageProvider {
-		protected APLangGen(FabricDataOutput dataGenerator) {
+	public static class ABLangGen extends FabricLanguageProvider {
+		protected ABLangGen(FabricDataOutput dataGenerator) {
 			super(dataGenerator);
 		}
 
@@ -42,8 +48,8 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 		}
 	}
 
-	public static class APModelGen extends FabricModelProvider {
-		public APModelGen(FabricDataOutput dataGenerator) {
+	public static class ABModelGen extends FabricModelProvider {
+		public ABModelGen(FabricDataOutput dataGenerator) {
 			super(dataGenerator);
 		}
 
@@ -54,12 +60,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 
 		@Override
 		public void generateItemModels(ItemModelGenerator itemModelGenerator) {
-			itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED);
+			itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, "_filled", Models.GENERATED);
 		}
 	}
 
-	public static class APRecipeGenerator extends FabricRecipeProvider {
-		public APRecipeGenerator(FabricDataOutput dataGenerator) {
+	public static class ABRecipeGenerator extends FabricRecipeProvider {
+		public ABRecipeGenerator(FabricDataOutput dataGenerator) {
 			super(dataGenerator);
 		}
 
@@ -74,6 +80,19 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 					.input('R', Items.RABBIT_HIDE)
 					.input('N', Items.NETHERITE_INGOT)
 					.offerTo(exporter);
+		}
+	}
+
+	public static class ABTagGenerator extends FabricTagProvider<Item> {
+		public ABTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+			super(output, RegistryKeys.ITEM, registriesFuture);
+		}
+
+		@Override
+		protected void configure(RegistryWrapper.WrapperLookup arg) {
+			getOrCreateTagBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
+					.add(Items.ELYTRA)
+					.add(Items.CARVED_PUMPKIN);
 		}
 	}
 }

@@ -39,6 +39,12 @@ public class ArmourBundle extends Item {
         super(settings);
     }
 
+    public float getFillPercent(ItemStack stack) {
+        if(stack.hasNbt())
+            return (float) getItemsInBundleInv(stack.getNbt().getList("Inv", NbtElement.COMPOUND_TYPE)) / MAX_SIZE;
+        return 0;
+    }
+
     @Override
     public boolean onStackClicked(ItemStack stack, Slot slot, ClickType clickType, PlayerEntity player) {
         if(clickType != ClickType.RIGHT)
@@ -199,7 +205,7 @@ public class ArmourBundle extends Item {
     }
 
     public boolean canItemBeInserted(NbtList inv, ItemStack stack) {
-        return getItemsInBundleInv(inv) < MAX_SIZE && stack.getItem() instanceof ArmorItem && !EnchantmentHelper.hasBindingCurse(stack);
+        return getItemsInBundleInv(inv) < MAX_SIZE && (stack.getItem() instanceof ArmorItem || stack.isIn(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)) && !EnchantmentHelper.hasBindingCurse(stack);
     }
 
     public Iterable<ItemStack> getItemsInBundle(ItemStack bundle) {
