@@ -2,8 +2,6 @@ package com.auroali.armourbundles.items;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.ArmourProfile;
-import net.minecraft.client.item.BundleTooltipData;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -11,6 +9,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.StackReference;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -24,10 +23,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ArmourBundle extends Item {
@@ -39,10 +35,13 @@ public class ArmourBundle extends Item {
         super(settings);
     }
 
+    @Override
+    public boolean allowComponentsUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack, ItemStack newStack) {
+        return super.allowComponentsUpdateAnimation(player, hand, oldStack, newStack);
+    }
+
     public float getFillPercent(ItemStack stack) {
-        if(stack.hasNbt())
-            return (float) getItemsInBundleInv(stack.getNbt().getList("Inv", NbtElement.COMPOUND_TYPE)) / MAX_SIZE;
-        return 0;
+        return 0.0f; //(float) stack.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY).stacks().size() / MAX_SIZE;
     }
 
     @Override
@@ -83,80 +82,63 @@ public class ArmourBundle extends Item {
     }
 
     public boolean tryInsert(ItemStack bundle, ItemStack stack) {
-        NbtCompound itemNbt = bundle.getOrCreateNbt();
-        NbtList inventory;
-        if(!itemNbt.contains("Inv"))
-            inventory = new NbtList();
-        else inventory = itemNbt.getList("Inv", NbtElement.COMPOUND_TYPE);
-
-        if(!canItemBeInserted(inventory, stack))
-            return false;
-
-        inventory.add(stack.writeNbt(new NbtCompound()));
-        itemNbt.put("Inv", inventory);
-        return true;
+        ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
+        if(canItemBeInserted(inventory, stack)) {
+            bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create(inventory, stack.copy()));
+            return true;
+        }
+            //        NbtCompound itemNbt = bundle.getOrCreateNbt();
+//        NbtList inventory;
+//        if(!itemNbt.contains("Inv"))
+//            inventory = new NbtList();
+//        else inventory = itemNbt.getList("Inv", NbtElement.COMPOUND_TYPE);
+//
+//        if(!canItemBeInserted(inventory, stack))
+//            return false;
+//
+//        inventory.add(stack.writeNbt(new NbtCompound()));
+//        itemNbt.put("Inv", inventory);
+        return false;
     }
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
         if(user.isSneaking()) {
-            NbtCompound itemNbt = stack.getOrCreateNbt();
-            int currentProfile = (itemNbt.getInt("CurrentProfile") + 1) % PROFILES;
-            itemNbt.putInt("CurrentProfile", currentProfile);
+
+            int currentProfile = (stack.get(ArmourBundles.CURRENT_PROFILE) + 1) % PROFILES;
+            stack.set(ArmourBundles.CURRENT_PROFILE, currentProfile);
             user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_selected", currentProfile + 1), true);
             return TypedActionResult.success(stack, world.isClient);
         }
         setProfile(stack, user);
-        user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_set", stack.getOrCreateNbt().getInt("CurrentProfile") + 1), true);
+        user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_set", stack.get(ArmourBundles.CURRENT_PROFILE) + 1), true);
         return TypedActionResult.success(stack, world.isClient);
     }
 
     public Optional<ItemStack> removeLastItem(ItemStack bundle) {
-        NbtCompound itemNbt = bundle.getOrCreateNbt();
-        NbtList inventory;
-        if(!itemNbt.contains("Inv"))
-            return Optional.empty();
-        inventory = itemNbt.getList("Inv", NbtElement.COMPOUND_TYPE);
-        if(inventory.isEmpty())
+        ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
+        if(inventory.stacks().isEmpty())
             return Optional.empty();
 
-        final int indexToRemove = 0;
-        // pull the stack from the inventory
-        ItemStack stack = ItemStack.fromNbt(inventory.getCompound(indexToRemove));
-        inventory.remove(indexToRemove);
-        // return the stack
+        ItemStack stack = inventory.stacks().getLast();
+        bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, inventory.remove(stack));
         return Optional.of(stack);
     }
 
     public void setProfile(ItemStack bundle, PlayerEntity entity) {
-        NbtCompound itemNbt = bundle.getOrCreateNbt();
-        NbtList profilesNbt;
-        if(!itemNbt.contains("Profiles")) {
-            profilesNbt = new NbtList();
-            // populate the list
-            for(int i = 0; i < PROFILES; i++)
-                profilesNbt.add(new ArmourProfile().writeToNbt(new NbtCompound()));
-        }
-        else profilesNbt = itemNbt.getList("Profiles", NbtElement.COMPOUND_TYPE);
-
-        int currentProfile = itemNbt.getInt("CurrentProfile");
+        Profiles profiles = bundle.get(ArmourBundles.PROFILES);
+        int currentProfile = bundle.get(ArmourBundles.CURRENT_PROFILE);
 
         ArmourProfile profile = ArmourProfile.generateFrom(entity);
-
-        profilesNbt.set(currentProfile, profile.writeToNbt(new NbtCompound()));
-        itemNbt.put("Profiles", profilesNbt);
+        bundle.set(ArmourBundles.PROFILES, profiles.with(currentProfile, profile));
     }
 
     public Optional<ArmourProfile> getProfile(int profileIdx, ItemStack bundle) {
-        NbtCompound itemNbt = bundle.getOrCreateNbt();
-        if(!itemNbt.contains("Profiles"))
+        Profiles profiles = bundle.get(ArmourBundles.PROFILES);
+        if(profileIdx >= profiles.profiles().size())
             return Optional.empty();
-        NbtList profilesNbt = itemNbt.getList("Profiles", NbtElement.COMPOUND_TYPE);
-
-        ArmourProfile profile = ArmourProfile.fromNbt(profilesNbt.getCompound(profileIdx));
-
-        return Optional.of(profile);
+        return Optional.of(profiles.profiles().get(profileIdx));
     }
 
     // this is in here instead of ArmourProfile because it requires moving items between the bundle
@@ -204,52 +186,21 @@ public class ArmourBundle extends Item {
         player.getItemCooldownManager().set(bundle.getItem(), COOLDOWN_TICKS);
     }
 
-    public boolean canItemBeInserted(NbtList inv, ItemStack stack) {
-        return getItemsInBundleInv(inv) < MAX_SIZE && (stack.getItem() instanceof ArmorItem || stack.isIn(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)) && !EnchantmentHelper.hasBindingCurse(stack);
+    public boolean canItemBeInserted(ArmourBundleInventory inv, ItemStack stack) {
+        return inv.stacks().size() < MAX_SIZE && (stack.getItem() instanceof ArmorItem || stack.isIn(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)) && !EnchantmentHelper.hasBindingCurse(stack);
     }
 
     public Iterable<ItemStack> getItemsInBundle(ItemStack bundle) {
-        NbtCompound itemNbt = bundle.getOrCreateNbt();
-        NbtList inv = itemNbt.getList("Inv", NbtElement.COMPOUND_TYPE);
+        ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
 
-        return inv.stream()
-                .map(NbtCompound.class::cast)
-                .map(ItemStack::fromNbt)
-                .toList();
+        return inventory.stacks();
     }
 
     public void removeStack(ItemStack bundle, ItemStack stackToRemove) {
-        NbtCompound itemNbt = bundle.getOrCreateNbt();
-        NbtList inv = itemNbt.getList("Inv", NbtElement.COMPOUND_TYPE);
+        ArmourBundleInventory inv = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
 
-        for(int i = 0; i < inv.size(); i++) {
-            ItemStack comp = ItemStack.fromNbt((NbtCompound)inv.get(i));
-            // is there no more ItemStack#isItemEqual ??
-            // so ItemStack#isItemEqual was *not* what i was looking for anyway so this is good
-            if(!areStacksSame(stackToRemove, comp))
-                continue;
-            inv.remove(i);
-            break;
-        }
-
-        itemNbt.put("Inv", inv);
-    }
-
-    public boolean areStacksSame(ItemStack stack, ItemStack other) {
-        return stack.isOf(other.getItem())
-                && stack.getCount() == other.getCount()
-                && (!stack.isDamageable() || stack.getDamage() == other.getDamage())
-                && Objects.equals(stack.getNbt(), other.getNbt());
-    }
-
-    public int getItemsInBundleInv(NbtList inv) {
-
-        // probably not the fastest but thats ok, it won't be called nearly often enough
-        // or on a large enough scale for that to be an issue
-        return inv.stream()
-                .map(NbtCompound.class::cast)
-                .mapToInt(item -> item.getInt("Count"))
-                .sum();
+        if(inv.stacks().contains(stackToRemove))
+            bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, inv.remove(stackToRemove));
     }
 
     // from minecraft's bundle impl
@@ -269,18 +220,19 @@ public class ArmourBundle extends Item {
         return ItemStack.EMPTY;
     }
 
-    @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
-
-        int currentProfile = stack.getOrCreateNbt().getInt("CurrentProfile");
-        tooltip.add(Text.of("%d/%d".formatted(currentProfile + 1, PROFILES)));
-    }
+//    @Override
+//    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipType context) {
+//        super.appendTooltip(stack, world, tooltip, context);
+//
+//        int currentProfile = stack.getOrCreateNbt().getInt("CurrentProfile");
+//        tooltip.add(Text.of("%d/%d".formatted(currentProfile + 1, PROFILES)));
+//    }
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
         DefaultedList<ItemStack> defaultedList = DefaultedList.of();
         getItemsInBundle(stack).forEach(defaultedList::add);
-        return Optional.of(new BundleTooltipData(defaultedList, 0));
+        //return Optional.of(new BundleTooltipData());
+        return Optional.empty();
     }
 }

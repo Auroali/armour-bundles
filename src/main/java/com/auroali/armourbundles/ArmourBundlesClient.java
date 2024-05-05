@@ -42,19 +42,13 @@ public class ArmourBundlesClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (PROFILE_1.wasPressed()) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeByte(0);
-                ClientPlayNetworking.send(ArmourBundles.CHANNEL_ID, buf);
+                ClientPlayNetworking.send(new EquipSlotC2SPacket(0));
             }
             while (PROFILE_2.wasPressed()) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeByte(1);
-                ClientPlayNetworking.send(ArmourBundles.CHANNEL_ID, buf);
+                ClientPlayNetworking.send(new EquipSlotC2SPacket(1));
             }
             while (PROFILE_3.wasPressed()) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeByte(2);
-                ClientPlayNetworking.send(ArmourBundles.CHANNEL_ID, buf);
+                ClientPlayNetworking.send(new EquipSlotC2SPacket(2));
             }
         });
     }

@@ -15,7 +15,7 @@
     " R "
   ],
   "result": {
-    "item": "armourbundles:armour_bundle"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "armourbundles:armour_bundle"
+  }
 }

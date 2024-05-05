@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.data.client.BlockStateModelGenerator;
 import net.minecraft.data.client.ItemModelGenerator;
 import net.minecraft.data.client.Models;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
+import net.minecraft.data.server.recipe.RecipeExporter;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -32,12 +32,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 	}
 
 	public static class ABLangGen extends FabricLanguageProvider {
-		protected ABLangGen(FabricDataOutput dataGenerator) {
-			super(dataGenerator);
+		protected ABLangGen(FabricDataOutput dataGenerator, CompletableFuture< RegistryWrapper.WrapperLookup > lookup) {
+			super(dataGenerator, lookup);
 		}
 
 		@Override
-		public void generateTranslations(TranslationBuilder translationBuilder) {
+		public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
 			translationBuilder.add(ArmourBundles.ARMOUR_BUNDLE, "Armor Bundle");
 			translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
 			translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
@@ -65,12 +65,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 	}
 
 	public static class ABRecipeGenerator extends FabricRecipeProvider {
-		public ABRecipeGenerator(FabricDataOutput dataGenerator) {
-			super(dataGenerator);
+		public ABRecipeGenerator(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+			super(dataGenerator, lookup);
 		}
 
 		@Override
-		public void generate(Consumer<RecipeJsonProvider> exporter) {
+		public void generate(RecipeExporter exporter) {
 			ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
 					.criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromItem(Items.NETHERITE_INGOT))
 					.criterion(hasItem(Items.RABBIT_HIDE), conditionsFromItem(Items.RABBIT_HIDE))
