@@ -23,6 +23,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 
 public class ArmourBundles implements ModInitializer {
+	// todo: fix bundle doing the item changed anim, readd bundle contents view
 	public static final String MODID = "armourbundles";
 
 	public static final DataComponentType<ArmourBundleInventory> ARMOUR_BUNDLE_INVENTORY = DataComponentType
