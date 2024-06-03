@@ -234,6 +234,7 @@ public class ArmourBundle extends Item {
 
     @Override
     public void onItemEntityDestroyed(ItemEntity entity) {
+
         ArmourBundleInventory inventory = entity.getStack().get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
         if (inventory != null) {
             entity.getStack().set(DataComponentTypes.BUNDLE_CONTENTS, BundleContentsComponent.DEFAULT);
