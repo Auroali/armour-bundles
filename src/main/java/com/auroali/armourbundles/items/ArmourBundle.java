@@ -2,31 +2,36 @@ package com.auroali.armourbundles.items;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.ArmourProfile;
+import com.auroali.armourbundles.items.tooltipdata.ArmourBundleTooltipData;
 import net.minecraft.client.item.TooltipData;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.StackReference;
 import net.minecraft.item.ArmorItem;
-import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.item.ItemUsage;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class ArmourBundle extends Item {
+    private static final int ITEM_BAR_COLOR = MathHelper.packRgb(0.4F, 0.4F, 1.0F);
     // about 3 full sets of armour, might change later
     public static final int MAX_SIZE = 12;
     public static final int PROFILES = 3;
@@ -83,7 +88,7 @@ public class ArmourBundle extends Item {
 
     public boolean tryInsert(ItemStack bundle, ItemStack stack) {
         ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
-        if(canItemBeInserted(inventory, stack)) {
+        if(inventory != null && canItemBeInserted(inventory, stack)) {
             bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create(inventory, stack.copy()));
             return true;
         }
@@ -118,7 +123,7 @@ public class ArmourBundle extends Item {
 
     public Optional<ItemStack> removeLastItem(ItemStack bundle) {
         ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
-        if(inventory.stacks().isEmpty())
+        if(inventory == null || inventory.stacks().isEmpty())
             return Optional.empty();
 
         ItemStack stack = inventory.stacks().getLast();
@@ -192,14 +197,15 @@ public class ArmourBundle extends Item {
 
     public Iterable<ItemStack> getItemsInBundle(ItemStack bundle) {
         ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
-
+        if(inventory == null)
+            return Collections.emptyList();
         return inventory.stacks();
     }
 
     public void removeStack(ItemStack bundle, ItemStack stackToRemove) {
         ArmourBundleInventory inv = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
 
-        if(inv.stacks().contains(stackToRemove))
+        if(inv != null && inv.stacks().contains(stackToRemove))
             bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, inv.remove(stackToRemove));
     }
 
@@ -220,19 +226,42 @@ public class ArmourBundle extends Item {
         return ItemStack.EMPTY;
     }
 
-//    @Override
-//    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipType context) {
-//        super.appendTooltip(stack, world, tooltip, context);
-//
-//        int currentProfile = stack.getOrCreateNbt().getInt("CurrentProfile");
-//        tooltip.add(Text.of("%d/%d".formatted(currentProfile + 1, PROFILES)));
-//    }
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        int profile = stack.getOrDefault(ArmourBundles.CURRENT_PROFILE, 0) + 1;
+        tooltip.add(Text.translatable("item.armourprofiles.armour_bundle.current_profile", profile, PROFILES));
+    }
+
+    @Override
+    public void onItemEntityDestroyed(ItemEntity entity) {
+        ArmourBundleInventory inventory = entity.getStack().get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
+        if (inventory != null) {
+            entity.getStack().set(DataComponentTypes.BUNDLE_CONTENTS, BundleContentsComponent.DEFAULT);
+            ItemUsage.spawnItemContents(entity, inventory.stacks());
+        }
+    }
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        DefaultedList<ItemStack> defaultedList = DefaultedList.of();
-        getItemsInBundle(stack).forEach(defaultedList::add);
-        //return Optional.of(new BundleTooltipData());
-        return Optional.empty();
+        return !stack.contains(DataComponentTypes.HIDE_TOOLTIP) && !stack.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP) ?
+                Optional.ofNullable(stack.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY)).map(ArmourBundleTooltipData::new)
+                : Optional.empty();
+    }
+
+    @Override
+    public boolean isItemBarVisible(ItemStack stack) {
+        ArmourBundleInventory inventory = stack.getOrDefault(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create());
+        return !inventory.stacks().isEmpty();
+    }
+
+    @Override
+    public int getItemBarStep(ItemStack stack) {
+        ArmourBundleInventory inventory = stack.getOrDefault(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create());
+        return Math.min(1 + (int) (inventory.stacks().size() / (float) MAX_SIZE * 12), 13);
+    }
+
+    @Override
+    public int getItemBarColor(ItemStack stack) {
+        return ITEM_BAR_COLOR;
     }
 }

@@ -19,7 +19,6 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 	@Override
@@ -41,10 +40,11 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 			translationBuilder.add(ArmourBundles.ARMOUR_BUNDLE, "Armor Bundle");
 			translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
 			translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
+			translationBuilder.add("item.armourprofiles.armour_bundle.current_profile", "Profile %d/%d");
 			translationBuilder.add("key.armourprofiles.select.1", "Equip Profile 1");
 			translationBuilder.add("key.armourprofiles.select.2", "Equip Profile 2");
 			translationBuilder.add("key.armourprofiles.select.3", "Equip Profile 3");
-			translationBuilder.add("category.armourprofiles.profiles", "Armor Profiles");
+			translationBuilder.add("category.armourprofiles.profiles", "Armor Bundles");
 		}
 	}
 

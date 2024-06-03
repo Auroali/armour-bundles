@@ -1,6 +1,7 @@
 {
-  "category.armourprofiles.profiles": "Armor Profiles",
+  "category.armourprofiles.profiles": "Armor Bundles",
   "item.armourbundles.armour_bundle": "Armor Bundle",
+  "item.armourprofiles.armour_bundle.current_profile": "Profile %d/%d",
   "item.armourprofiles.armour_bundle.profile_selected": "Selected profile %d!",
   "item.armourprofiles.armour_bundle.profile_set": "Set profile %d!",
   "key.armourprofiles.select.1": "Equip Profile 1",

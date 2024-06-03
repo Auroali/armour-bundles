@@ -1,8 +1,6 @@
 package com.auroali.armourbundles.items;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +12,7 @@ public record ArmourBundleInventory(List<ItemStack> stacks) {
     }
 
     public static ArmourBundleInventory create(List<ItemStack> stacks) {
-        return new ArmourBundleInventory(Collections.unmodifiableList(stacks));
+        return new ArmourBundleInventory(List.copyOf(stacks));
     }
 
     public static ArmourBundleInventory create(ArmourBundleInventory inventory, ItemStack stack) {

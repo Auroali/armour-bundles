@@ -1,7 +1,6 @@
 package com.auroali.armourbundles.items;
 
 import com.auroali.armourbundles.ArmourProfile;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
 
 import java.util.List;
