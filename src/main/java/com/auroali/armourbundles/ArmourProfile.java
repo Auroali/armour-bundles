@@ -68,7 +68,7 @@ public class ArmourProfile {
     public static ArmourProfile generateFrom(PlayerEntity entity) {
         ArmourProfile profile = new ArmourProfile();
         for(EquipmentSlot slot : EquipmentSlot.values()) {
-            if(slot.getType() != EquipmentSlot.Type.ARMOR)
+            if(slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR)
                 continue;
 
             ItemStack stack = entity.getEquippedStack(slot);

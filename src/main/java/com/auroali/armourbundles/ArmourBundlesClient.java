@@ -20,7 +20,7 @@ public class ArmourBundlesClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ModelPredicateProviderRegistry.register(ArmourBundles.ARMOUR_BUNDLE, new Identifier("filled"), (stack, world, entity, seed) -> ArmourBundles.ARMOUR_BUNDLE.getFillPercent(stack));
+        ModelPredicateProviderRegistry.register(ArmourBundles.ARMOUR_BUNDLE, Identifier.of("filled"), (stack, world, entity, seed) -> ArmourBundles.ARMOUR_BUNDLE.getFillPercent(stack));
 
         PROFILE_1 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.armourprofiles.select.1",

@@ -8,7 +8,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
@@ -25,19 +25,19 @@ public class ArmourBundles implements ModInitializer {
 	// todo: fix bundle doing the item changed anim, readd bundle contents view
 	public static final String MODID = "armourbundles";
 
-	public static final DataComponentType<ArmourBundleInventory> ARMOUR_BUNDLE_INVENTORY = DataComponentType
+	public static final ComponentType<ArmourBundleInventory> ARMOUR_BUNDLE_INVENTORY = ComponentType
 			.<ArmourBundleInventory>builder()
 			.codec(ItemStack.CODEC.listOf().xmap(ArmourBundleInventory::new, ArmourBundleInventory::stacks))
 			.packetCodec(ItemStack.PACKET_CODEC.collect(PacketCodecs.toList()).xmap(ArmourBundleInventory::new, ArmourBundleInventory::stacks))
 			.cache()
 			.build();
-	public static final DataComponentType<Integer> CURRENT_PROFILE = DataComponentType
+	public static final ComponentType<Integer> CURRENT_PROFILE = ComponentType
 			.<Integer>builder()
 			.codec(Codec.INT)
 			.packetCodec(PacketCodecs.VAR_INT)
 			.build();
 
-	public static final DataComponentType<Profiles> PROFILES = DataComponentType
+	public static final ComponentType<Profiles> PROFILES = ComponentType
 			.<Profiles>builder()
 			.codec(ArmourProfile.CODEC.listOf().xmap(Profiles::new, Profiles::profiles))
 			.cache()
@@ -82,6 +82,6 @@ public class ArmourBundles implements ModInitializer {
 	}
 
 	public static Identifier id(String id) {
-		return new Identifier(MODID, id);
+		return Identifier.of(MODID, id);
 	}
 }
