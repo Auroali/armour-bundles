@@ -17,6 +17,7 @@ import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.tag.ItemTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -45,6 +46,7 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 			translationBuilder.add("key.armourprofiles.select.2", "Equip Profile 2");
 			translationBuilder.add("key.armourprofiles.select.3", "Equip Profile 3");
 			translationBuilder.add("category.armourprofiles.profiles", "Armor Bundles");
+			translationBuilder.add(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS, "Armor Bundle Insertables");
 		}
 	}
 
@@ -91,6 +93,10 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 		@Override
 		protected void configure(RegistryWrapper.WrapperLookup arg) {
 			getOrCreateTagBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
+					.forceAddTag(ItemTags.CHEST_ARMOR)
+					.forceAddTag(ItemTags.FOOT_ARMOR)
+					.forceAddTag(ItemTags.LEG_ARMOR)
+					.forceAddTag(ItemTags.HEAD_ARMOR)
 					.add(Items.ELYTRA)
 					.add(Items.CARVED_PUMPKIN);
 		}

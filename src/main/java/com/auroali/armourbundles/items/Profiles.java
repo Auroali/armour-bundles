@@ -22,4 +22,14 @@ public record Profiles(List<ArmourProfile> profiles) {
         newProfiles.set(index, profile);
         return new Profiles(newProfiles);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || (o instanceof Profiles p && p.profiles.equals(this.profiles));
+    }
+
+    @Override
+    public int hashCode() {
+        return profiles.hashCode();
+    }
 }

@@ -80,4 +80,28 @@ public class ArmourProfile {
 
         return profile;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this == obj)
+            return true;
+        if(obj instanceof ArmourProfile profile) {
+            if(profile.armorPieces.length != this.armorPieces.length)
+                return false;
+            for(int i = 0; i < profile.armorPieces.length; i++) {
+                ItemStack otherStack = profile.armorPieces[i];
+                ItemStack thisStack = this.armorPieces[i];
+
+                if(!ItemStack.areEqual(otherStack, thisStack))
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return ItemStack.listHashCode(Arrays.asList(armorPieces));
+    }
 }

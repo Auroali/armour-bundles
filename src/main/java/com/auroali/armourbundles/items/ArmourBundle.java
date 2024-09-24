@@ -179,7 +179,7 @@ public class ArmourBundle extends Item {
     }
 
     public boolean canItemBeInserted(ArmourBundleInventory inv, ItemStack stack) {
-        return inv.stacks().size() < MAX_SIZE && (stack.getItem() instanceof ArmorItem || stack.isIn(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)) && !EnchantmentHelper.hasAnyEnchantmentsWith(stack, EnchantmentEffectComponentTypes.PREVENT_ARMOR_CHANGE);
+        return inv.stacks().size() < MAX_SIZE && stack.isIn(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS) && !EnchantmentHelper.hasAnyEnchantmentsWith(stack, EnchantmentEffectComponentTypes.PREVENT_ARMOR_CHANGE);
     }
 
     public Iterable<ItemStack> getItemsInBundle(ItemStack bundle) {

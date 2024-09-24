@@ -6,5 +6,6 @@
   "item.armourprofiles.armour_bundle.profile_set": "Set profile %d!",
   "key.armourprofiles.select.1": "Equip Profile 1",
   "key.armourprofiles.select.2": "Equip Profile 2",
-  "key.armourprofiles.select.3": "Equip Profile 3"
+  "key.armourprofiles.select.3": "Equip Profile 3",
+  "tag.item.armourbundles.armor_bundle_insertable": "Armor Bundle Insertables"
 }
