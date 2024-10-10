@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public record ArmourBundleInventory(List<ItemStack> stacks) {
-    public static ArmourBundleInventory DEFAULT = new ArmourBundleInventory(Collections.emptyList());
+public record ArmourBundleInventory(List<ItemStack> stacks, int selectedSlot) {
+    public static ArmourBundleInventory DEFAULT = new ArmourBundleInventory(Collections.emptyList(), 0);
     public static ArmourBundleInventory create() {
         return DEFAULT;
     }
@@ -15,14 +15,14 @@ public record ArmourBundleInventory(List<ItemStack> stacks) {
     public static ArmourBundleInventory create(List<ItemStack> stacks) {
         if(stacks.isEmpty())
             return DEFAULT;
-        return new ArmourBundleInventory(List.copyOf(stacks));
+        return new ArmourBundleInventory(List.copyOf(stacks), 0);
     }
 
     public static ArmourBundleInventory create(ArmourBundleInventory inventory, ItemStack stack) {
         List<ItemStack> stacks = new ArrayList<>(inventory.stacks().size() + 1);
         stacks.add(stack);
         stacks.addAll(inventory.stacks);
-        return create(stacks);
+        return new ArmourBundleInventory(stacks, Math.min(inventory.selectedSlot(), stacks.size() - 1));
     }
 
     public ArmourBundleInventory remove(ItemStack stack) {
@@ -30,7 +30,7 @@ public record ArmourBundleInventory(List<ItemStack> stacks) {
         list.remove(stack);
         if(list.isEmpty())
             return DEFAULT;
-        return create(list);
+        return new ArmourBundleInventory(list, Math.min(selectedSlot(), list.size() - 1));
     }
 
     @Override

@@ -11,10 +11,12 @@ import net.minecraft.data.client.BlockStateModelGenerator;
 import net.minecraft.data.client.ItemModelGenerator;
 import net.minecraft.data.client.Models;
 import net.minecraft.data.server.recipe.RecipeExporter;
+import net.minecraft.data.server.recipe.RecipeGenerator;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
+import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
@@ -27,7 +29,7 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
 		pack.addProvider(ABLangGen::new);
 		pack.addProvider(ABModelGen::new);
-		pack.addProvider(ABRecipeGenerator::new);
+		pack.addProvider(ABRecipeProvider::new);
 		pack.addProvider(ABTagGenerator::new);
 	}
 
@@ -66,14 +68,31 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 		}
 	}
 
-	public static class ABRecipeGenerator extends FabricRecipeProvider {
-		public ABRecipeGenerator(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+	public static class ABRecipeProvider extends FabricRecipeProvider {
+		public ABRecipeProvider(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
 			super(dataGenerator, lookup);
 		}
 
 		@Override
-		public void generate(RecipeExporter exporter) {
-			ShapedRecipeJsonBuilder.create(RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
+		public RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup reg, RecipeExporter exporter) {
+			return new ABRecipeGenerator(reg, exporter);
+		}
+
+		@Override
+		public String getName() {
+			return "Armour Bundles Recipe";
+		}
+	}
+
+	public static class ABRecipeGenerator extends RecipeGenerator {
+		RegistryEntryLookup<Item> lookup;
+		public ABRecipeGenerator(RegistryWrapper.WrapperLookup lookup, RecipeExporter exporter) {
+			super(lookup, exporter);
+			this.lookup = lookup.getOrThrow(RegistryKeys.ITEM);
+		}
+		@Override
+		public void generate() {
+			ShapedRecipeJsonBuilder.create(lookup, RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
 					.criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromItem(Items.NETHERITE_INGOT))
 					.criterion(hasItem(Items.RABBIT_HIDE), conditionsFromItem(Items.RABBIT_HIDE))
 					.pattern(" N ")

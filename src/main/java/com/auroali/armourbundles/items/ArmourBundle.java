@@ -18,10 +18,9 @@ import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 import java.util.Collections;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class ArmourBundle extends Item {
-    private static final int ITEM_BAR_COLOR = MathHelper.packRgb(0.4F, 0.4F, 1.0F);
     // about 3 full sets of armour, might change later
     public static final int MAX_SIZE = 12;
     public static final int PROFILES = 3;
@@ -94,18 +92,18 @@ public class ArmourBundle extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
         if(user.isSneaking()) {
 
             int currentProfile = (stack.get(ArmourBundles.CURRENT_PROFILE) + 1) % PROFILES;
             stack.set(ArmourBundles.CURRENT_PROFILE, currentProfile);
             user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_selected", currentProfile + 1), true);
-            return TypedActionResult.success(stack, world.isClient);
+            return ActionResult.SUCCESS_SERVER;
         }
         setProfile(stack, user);
         user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_set", stack.get(ArmourBundles.CURRENT_PROFILE) + 1), true);
-        return TypedActionResult.success(stack, world.isClient);
+        return ActionResult.SUCCESS_SERVER;
     }
 
     public Optional<ItemStack> removeFirstItem(ItemStack bundle) {
@@ -175,7 +173,7 @@ public class ArmourBundle extends Item {
             }
         }
 
-        player.getItemCooldownManager().set(bundle.getItem(), COOLDOWN_TICKS);
+        player.getItemCooldownManager().set(bundle, COOLDOWN_TICKS);
     }
 
     public boolean canItemBeInserted(ArmourBundleInventory inv, ItemStack stack) {
@@ -250,6 +248,6 @@ public class ArmourBundle extends Item {
 
     @Override
     public int getItemBarColor(ItemStack stack) {
-        return ITEM_BAR_COLOR;
+        return -1;
     }
 }

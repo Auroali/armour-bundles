@@ -64,7 +64,7 @@ public class ArmourBundleTooltipComponent implements TooltipComponent {
             ItemStack itemStack = this.inv.stacks().get(index);
             this.draw(context, x, y, SlotSprite.SLOT);
             context.drawItem(itemStack, x + 1, y + 1, index);
-            context.drawItemInSlot(textRenderer, itemStack, x + 1, y + 1);
+            context.drawStackOverlay(textRenderer, itemStack, x + 1, y + 1);
             if (index == 0) {
                 HandledScreen.drawSlotHighlight(context, x + 1, y + 1, 0);
             }

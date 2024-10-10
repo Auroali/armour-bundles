@@ -69,10 +69,11 @@ public class ArmourBundles implements ModInitializer {
 		PayloadTypeRegistry.playC2S().register(EquipSlotC2SPacket.ID, EquipSlotC2SPacket.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(EquipSlotC2SPacket.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
-			if(player.getItemCooldownManager().isCoolingDown(ARMOUR_BUNDLE))
-				return;
 
 			ItemStack armourBundle = ArmourBundle.findInInv(player);
+			if(player.getItemCooldownManager().isCoolingDown(armourBundle))
+				return;
+
 			if(armourBundle.isEmpty())
 				return;
 
