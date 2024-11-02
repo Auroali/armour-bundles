@@ -1,6 +1,6 @@
 package com.auroali.armourbundles;
 
-import com.auroali.armourbundles.items.tooltipdata.ArmourBundleTooltipComponent;
+//import com.auroali.armourbundles.items.tooltipdata.ArmourBundleTooltipComponent;
 import com.auroali.armourbundles.items.tooltipdata.ArmourBundleTooltipData;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -54,8 +54,8 @@ public class ArmourBundlesClient implements ClientModInitializer {
         });
 
         TooltipComponentCallback.EVENT.register(tooltipData -> {
-            if(tooltipData instanceof ArmourBundleTooltipData data)
-                return new ArmourBundleTooltipComponent(data.inventory());
+            //if(tooltipData instanceof ArmourBundleTooltipData data)
+            //    return new ArmourBundleTooltipComponent(data.inventory());
             return null;
         });
     }

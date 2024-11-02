@@ -27,12 +27,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ArmourBundle extends Item {
+public class ArmourBundleItem extends Item {
     // about 3 full sets of armour, might change later
     public static final int MAX_SIZE = 12;
     public static final int PROFILES = 3;
     public static final int COOLDOWN_TICKS = 80;
-    public ArmourBundle(net.minecraft.item.Item.Settings settings) {
+    public ArmourBundleItem(Item.Settings settings) {
         super(settings);
     }
 
@@ -85,7 +85,9 @@ public class ArmourBundle extends Item {
     public boolean tryInsert(ItemStack bundle, ItemStack stack) {
         ArmourBundleInventory inventory = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
         if(inventory != null && canItemBeInserted(inventory, stack)) {
-            bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create(inventory, stack.copy()));
+            ArmourBundleInventory.Builder builder = ArmourBundleInventory.builder(inventory);
+            builder.insertStack(stack.copy(), 0);
+            bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, builder.build());
             return true;
         }
         return false;
@@ -93,16 +95,16 @@ public class ArmourBundle extends Item {
 
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
-        if(user.isSneaking()) {
-
-            int currentProfile = (stack.get(ArmourBundles.CURRENT_PROFILE) + 1) % PROFILES;
-            stack.set(ArmourBundles.CURRENT_PROFILE, currentProfile);
-            user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_selected", currentProfile + 1), true);
-            return ActionResult.SUCCESS_SERVER;
-        }
-        setProfile(stack, user);
-        user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_set", stack.get(ArmourBundles.CURRENT_PROFILE) + 1), true);
+//        ItemStack stack = user.getStackInHand(hand);
+//        if(user.isSneaking()) {
+//
+//            int currentProfile = (stack.get(ArmourBundles.CURRENT_PROFILE) + 1) % PROFILES;
+//            stack.set(ArmourBundles.CURRENT_PROFILE, currentProfile);
+//            user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_selected", currentProfile + 1), true);
+//            return ActionResult.SUCCESS_SERVER;
+//        }
+//        setProfile(stack, user);
+//        user.sendMessage(Text.translatable("item.armourprofiles.armour_bundle.profile_set", stack.get(ArmourBundles.CURRENT_PROFILE) + 1), true);
         return ActionResult.SUCCESS_SERVER;
     }
 
@@ -111,9 +113,13 @@ public class ArmourBundle extends Item {
         if(inventory == null || inventory.stacks().isEmpty())
             return Optional.empty();
 
-        ItemStack stack = inventory.stacks().getFirst();
-        bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, inventory.remove(stack));
-        return Optional.of(stack);
+        ArmourBundleInventory.Builder builder = ArmourBundleInventory.builder(inventory);
+        ItemStack stack = builder.removeStack(builder.getSelectedSlot());
+        if(!stack.isEmpty()) {
+            bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, builder.build());
+            return Optional.of(stack);
+        }
+        return Optional.empty();
     }
 
     public void setProfile(ItemStack bundle, PlayerEntity entity) {
@@ -134,46 +140,46 @@ public class ArmourBundle extends Item {
     // this is in here instead of ArmourProfile because it requires moving items between the bundle
     // and the player's inventory, which seemed better suited for this
     public void tryEquip(ItemStack bundle, PlayerEntity player, ArmourProfile profile) {
-        for(EquipmentSlot slot : EquipmentSlot.values()) {
-            if(slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR)
-                continue;
-
-            ItemStack current = player.getEquippedStack(slot);
-
-            if(profile.matches(slot, current))
-                continue;
-
-            if(profile.getItemInSlot(slot).isEmpty()) {
-                if(!current.isEmpty() && tryInsert(bundle, current)) {
-                    current.setCount(0);
-                    playInsertSound(player);
-                    continue;
-                }
-            }
-
-            for(ItemStack stack : getItemsInBundle(bundle)) {
-                if(!profile.matches(slot, stack))
-                    continue;
-
-                removeStack(bundle, stack);
-
-                // so this is probably a terrible way to go about things
-                // i just wanted the sound without the duplicated equip call ._.
-                boolean flag = current.isEmpty();
-                if(!flag && tryInsert(bundle, current)) {
-                    flag = true;
-                    playInsertSound(player);
-                }
-                if(flag) {
-                    player.equipStack(slot, stack);
-                    break;
-                }
-                else tryInsert(bundle, stack);
-
-            }
-        }
-
-        player.getItemCooldownManager().set(bundle, COOLDOWN_TICKS);
+//        for(EquipmentSlot slot : EquipmentSlot.values()) {
+//            if(slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR)
+//                continue;
+//
+//            ItemStack current = player.getEquippedStack(slot);
+//
+//            if(profile.matches(slot, current))
+//                continue;
+//
+//            if(profile.getItemInSlot(slot).isEmpty()) {
+//                if(!current.isEmpty() && tryInsert(bundle, current)) {
+//                    current.setCount(0);
+//                    playInsertSound(player);
+//                    continue;
+//                }
+//            }
+//
+//            for(ItemStack stack : getItemsInBundle(bundle)) {
+//                if(!profile.matches(slot, stack))
+//                    continue;
+//
+//                removeStack(bundle, stack);
+//
+//                // so this is probably a terrible way to go about things
+//                // i just wanted the sound without the duplicated equip call ._.
+//                boolean flag = current.isEmpty();
+//                if(!flag && tryInsert(bundle, current)) {
+//                    flag = true;
+//                    playInsertSound(player);
+//                }
+//                if(flag) {
+//                    player.equipStack(slot, stack);
+//                    break;
+//                }
+//                else tryInsert(bundle, stack);
+//
+//            }
+//        }
+//
+//        player.getItemCooldownManager().set(bundle, COOLDOWN_TICKS);
     }
 
     public boolean canItemBeInserted(ArmourBundleInventory inv, ItemStack stack) {
@@ -185,13 +191,6 @@ public class ArmourBundle extends Item {
         if(inventory == null)
             return Collections.emptyList();
         return inventory.stacks();
-    }
-
-    public void removeStack(ItemStack bundle, ItemStack stackToRemove) {
-        ArmourBundleInventory inv = bundle.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY);
-
-        if(inv != null && inv.stacks().contains(stackToRemove))
-            bundle.set(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, inv.remove(stackToRemove));
     }
 
     // from minecraft's bundle impl
@@ -229,20 +228,21 @@ public class ArmourBundle extends Item {
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        return !stack.contains(DataComponentTypes.HIDE_TOOLTIP) && !stack.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP) ?
-                Optional.ofNullable(stack.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY)).map(ArmourBundleTooltipData::new)
-                : Optional.empty();
+//        return !stack.contains(DataComponentTypes.HIDE_TOOLTIP) && !stack.contains(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP) ?
+//                Optional.ofNullable(stack.get(ArmourBundles.ARMOUR_BUNDLE_INVENTORY)).map(ArmourBundleTooltipData::new)
+//                : Optional.empty();
+        return Optional.empty();
     }
 
     @Override
     public boolean isItemBarVisible(ItemStack stack) {
-        ArmourBundleInventory inventory = stack.getOrDefault(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create());
+        ArmourBundleInventory inventory = stack.getOrDefault(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.DEFAULT);
         return !inventory.stacks().isEmpty();
     }
 
     @Override
     public int getItemBarStep(ItemStack stack) {
-        ArmourBundleInventory inventory = stack.getOrDefault(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create());
+        ArmourBundleInventory inventory = stack.getOrDefault(ArmourBundles.ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.DEFAULT);
         return Math.min(1 + (int) (inventory.stacks().size() / (float) MAX_SIZE * 12), 13);
     }
 

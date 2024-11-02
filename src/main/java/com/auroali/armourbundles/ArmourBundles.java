@@ -1,6 +1,6 @@
 package com.auroali.armourbundles;
 
-import com.auroali.armourbundles.items.ArmourBundle;
+import com.auroali.armourbundles.items.ArmourBundleItem;
 import com.auroali.armourbundles.items.ArmourBundleInventory;
 import com.auroali.armourbundles.items.Profiles;
 import com.mojang.serialization.Codec;
@@ -12,9 +12,11 @@ import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -27,8 +29,8 @@ public class ArmourBundles implements ModInitializer {
 
 	public static final ComponentType<ArmourBundleInventory> ARMOUR_BUNDLE_INVENTORY = ComponentType
 			.<ArmourBundleInventory>builder()
-			.codec(ItemStack.CODEC.listOf().xmap(ArmourBundleInventory::new, ArmourBundleInventory::stacks))
-			.packetCodec(ItemStack.PACKET_CODEC.collect(PacketCodecs.toList()).xmap(ArmourBundleInventory::new, ArmourBundleInventory::stacks))
+			.codec(ArmourBundleInventory.CODEC)
+			.packetCodec(ArmourBundleInventory.PACKET_CODEC)
 			.cache()
 			.build();
 	public static final ComponentType<Integer> CURRENT_PROFILE = ComponentType
@@ -43,12 +45,14 @@ public class ArmourBundles implements ModInitializer {
 			.cache()
 			.build();
 
-	public static final ArmourBundle ARMOUR_BUNDLE = new ArmourBundle(new Item.Settings()
+	public static final RegistryKey<Item> ARMOUR_BUNDLE_KEY = RegistryKey.of(RegistryKeys.ITEM, id("armour_bundle"));
+	public static final ArmourBundleItem ARMOUR_BUNDLE = new ArmourBundleItem(new Item.Settings()
 			.fireproof()
 			.maxCount(1)
-			.component(ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.create())
+			.component(ARMOUR_BUNDLE_INVENTORY, ArmourBundleInventory.DEFAULT)
 			.component(CURRENT_PROFILE, 0)
-			.component(PROFILES, Profiles.create(ArmourBundle.PROFILES))
+			.component(PROFILES, Profiles.create(ArmourBundleItem.PROFILES))
+			.registryKey(ARMOUR_BUNDLE_KEY)
 			.rarity(Rarity.UNCOMMON)
 	);
 
@@ -59,7 +63,7 @@ public class ArmourBundles implements ModInitializer {
 		Registry.register(Registries.DATA_COMPONENT_TYPE, id("armour_bundle_inventory"), ARMOUR_BUNDLE_INVENTORY);
 		Registry.register(Registries.DATA_COMPONENT_TYPE, id("current_profile"), CURRENT_PROFILE);
 		Registry.register(Registries.DATA_COMPONENT_TYPE, id("profiles"), PROFILES);
-		Registry.register(Registries.ITEM, id("armour_bundle"), ARMOUR_BUNDLE);
+		Registry.register(Registries.ITEM, ARMOUR_BUNDLE_KEY, ARMOUR_BUNDLE);
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
 						.register(content -> {
@@ -70,7 +74,7 @@ public class ArmourBundles implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(EquipSlotC2SPacket.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
 
-			ItemStack armourBundle = ArmourBundle.findInInv(player);
+			ItemStack armourBundle = ArmourBundleItem.findInInv(player);
 			if(player.getItemCooldownManager().isCoolingDown(armourBundle))
 				return;
 
