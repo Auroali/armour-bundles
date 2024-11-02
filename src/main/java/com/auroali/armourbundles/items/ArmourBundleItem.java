@@ -47,16 +47,14 @@ public class ArmourBundleItem extends Item {
 
     @Override
     public boolean onStackClicked(ItemStack stack, Slot slot, ClickType clickType, PlayerEntity player) {
-        if(clickType != ClickType.RIGHT)
-            return false;
         // if theres a stack in the clicked on slot, we try to insert it
-        if(slot.hasStack() && tryInsert(stack, slot.getStack())) {
+        if(clickType == ClickType.LEFT && slot.hasStack() && tryInsert(stack, slot.getStack())) {
             slot.getStack().setCount(0);
             playInsertSound(player);
             return true;
         }
         // if there isn't, we try to remove an item and place it into the slot
-        if(!slot.hasStack()) {
+        if(clickType == ClickType.RIGHT && !slot.hasStack()) {
             removeFirstItem(stack).ifPresent(slot::setStack);
             playRemoveOneSound(player);
         }
@@ -65,16 +63,13 @@ public class ArmourBundleItem extends Item {
 
     @Override
     public boolean onClicked(ItemStack stack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity player, StackReference cursorStackReference) {
-        if(clickType != ClickType.RIGHT)
-            return false;
-
-        if(!otherStack.isEmpty() && tryInsert(stack, otherStack)) {
+        if(clickType == ClickType.LEFT && !otherStack.isEmpty() && tryInsert(stack, otherStack)) {
             otherStack.setCount(0);
             playInsertSound(player);
             return true;
         }
 
-        if(otherStack.isEmpty()) {
+        if(clickType == ClickType.RIGHT && otherStack.isEmpty()) {
             removeFirstItem(stack).ifPresent(cursorStackReference::set);
             playRemoveOneSound(player);
             return true;
