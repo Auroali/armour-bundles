@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "N": {
-      "item": "minecraft:netherite_ingot"
-    },
-    "R": {
-      "item": "minecraft:rabbit_hide"
-    }
+    "N": "minecraft:netherite_ingot",
+    "R": "minecraft:rabbit_hide"
   },
   "pattern": [
     " N ",
