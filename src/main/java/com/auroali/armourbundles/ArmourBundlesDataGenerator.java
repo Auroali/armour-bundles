@@ -96,13 +96,15 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
         @Override
         public void generate() {
             ShapedRecipeJsonBuilder.create(lookup, RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
+              .criterion(hasItem(Items.STRING), conditionsFromItem(Items.STRING))
               .criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromItem(Items.NETHERITE_INGOT))
               .criterion(hasItem(Items.RABBIT_HIDE), conditionsFromItem(Items.RABBIT_HIDE))
-              .pattern(" N ")
-              .pattern("R R")
-              .pattern(" R ")
+              .pattern("S")
+              .pattern("R")
+              .pattern("N")
               .input('R', Items.RABBIT_HIDE)
               .input('N', Items.NETHERITE_INGOT)
+              .input('S', Items.STRING)
               .offerTo(exporter);
         }
     }

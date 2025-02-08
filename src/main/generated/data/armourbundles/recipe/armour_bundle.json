@@ -3,12 +3,13 @@
   "category": "equipment",
   "key": {
     "N": "minecraft:netherite_ingot",
-    "R": "minecraft:rabbit_hide"
+    "R": "minecraft:rabbit_hide",
+    "S": "minecraft:string"
   },
   "pattern": [
-    " N ",
-    "R R",
-    " R "
+    "S",
+    "R",
+    "N"
   ],
   "result": {
     "count": 1,
