@@ -21,6 +21,7 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
     private static final Text BUNDLE_FULL = Text.translatable("item.minecraft.bundle.full");
     private static final Text BUNDLE_EMPTY = Text.translatable("item.minecraft.bundle.empty");
     private static final Text BUNDLE_EMPTY_DESCRIPTION = Text.translatable("item.armourbundles.armourbundle.empty.description");
+    private static final Text BUNDLE_BOUND_ITEMS_DESCRIPTION = Text.translatable("item.armourbundles.armourbundle.bound.description");
 
     protected final ArmourBundleContentsComponent contents;
 
@@ -36,17 +37,16 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
         }
 
         int xOffset = x + this.getXMargin(width) + 96;
-        int yOffset = y + 24;
 
         for (int i = 1; i <= 4; i++) {
             int xPos = xOffset - i * 24;
-            int yPos = yOffset - 24;
             if (this.contents.getStacks().size() >= i)
-                this.drawItem(textRenderer, context, xPos, yPos, i);
+                this.drawItem(textRenderer, context, xPos, y, i);
         }
 
         this.renderSelectedTooltip(textRenderer, context, x, y, width);
         this.drawProgressBar(textRenderer, context, x + this.getXMargin(width), y + this.getRowsHeight() + 4);
+        this.drawBoundItems(context, textRenderer, x + this.getXMargin(width), y + this.getRowsHeight() + 17);
     }
 
     private void renderSelectedTooltip(TextRenderer renderer, DrawContext context, int x, int y, int width) {
@@ -58,6 +58,19 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
         int textWidth = renderer.getWidth(name.asOrderedText());
         int xPos = x + width / 2 - 12;
         context.drawTooltip(renderer, name, xPos - textWidth / 2, y - 15, selected.get(DataComponentTypes.TOOLTIP_STYLE));
+    }
+
+    private void drawBoundItems(DrawContext context, TextRenderer textRenderer, int x, int y) {
+        if (this.contents.getBoundEquipment().isEmpty())
+            return;
+
+        context.drawTextWrapped(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 16777215);
+
+        int index = 0;
+        for (ItemStack stack : this.contents.getBoundEquipment().values()) {
+            context.drawItem(stack, x + 4 + index * 24, y + this.getBoundDescriptionHeight(textRenderer) + 6);
+            index++;
+        }
     }
 
     private void drawItem(TextRenderer renderer, DrawContext context, int x, int y, int index) {
@@ -96,6 +109,7 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
     public void drawEmpty(TextRenderer renderer, int x, int y, int width, int height, DrawContext context) {
         context.drawTextWrapped(renderer, BUNDLE_EMPTY_DESCRIPTION, x + this.getXMargin(width), y, 96, 0xaaaaaa);
         this.drawProgressBar(renderer, context, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 4);
+        this.drawBoundItems(context, renderer, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 17);
     }
 
     protected int getEmptyHeight(TextRenderer renderer) {
@@ -114,9 +128,17 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
         return 1;
     }
 
+    public int getBoundRowHeight(TextRenderer textRenderer) {
+        return !this.contents.getBoundEquipment().isEmpty() ? getBoundDescriptionHeight(textRenderer) + 24 : 0;
+    }
+
+    public int getBoundDescriptionHeight(TextRenderer textRenderer) {
+        return textRenderer.getWrappedLinesHeight(BUNDLE_BOUND_ITEMS_DESCRIPTION, 96);
+    }
+
     @Override
     public int getHeight(TextRenderer textRenderer) {
-        return this.contents.isEmpty() ? this.getEmptyHeight(textRenderer) + 21 : this.getRowsHeight() + 21;
+        return this.contents.isEmpty() ? this.getEmptyHeight(textRenderer) + this.getBoundRowHeight(textRenderer) + 21 : this.getRowsHeight() + this.getBoundRowHeight(textRenderer) + 21;
     }
 
     @Override

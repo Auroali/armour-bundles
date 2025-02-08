@@ -2,7 +2,7 @@ package com.auroali.armourbundles;
 
 import com.auroali.armourbundles.client.ArmourBundleContentsTooltipComponent;
 import com.auroali.armourbundles.common.items.components.ArmourBundleContentsComponent;
-import com.auroali.armourbundles.common.network.EquipSlotC2SPacket;
+import com.auroali.armourbundles.common.network.CycleEquippedC2S;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -14,42 +14,39 @@ import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class ArmourBundlesClient implements ClientModInitializer {
-    public static KeyBinding PROFILE_1;
-    public static KeyBinding PROFILE_2;
-    public static KeyBinding PROFILE_3;
+    public static KeyBinding EQUIP_PREV = new KeyBinding(
+      "key.armourprofiles.equip_prev",
+      InputUtil.Type.KEYSYM,
+      GLFW.GLFW_KEY_Y,
+      "category.armourprofiles.profiles"
+    );
+    public static KeyBinding EQUIP_NEXT = new KeyBinding(
+      "key.armourprofiles.equip_next",
+      InputUtil.Type.KEYSYM,
+      GLFW.GLFW_KEY_U,
+      "category.armourprofiles.profiles"
+    );
+
+    int timer;
 
     @Override
     public void onInitializeClient() {
         //ModelPredicateProviderRegistry.register(ArmourBundles.ARMOUR_BUNDLE, Identifier.of("filled"), (stack, world, entity, seed) -> ArmourBundles.ARMOUR_BUNDLE.getFillPercent(stack));
-
-        PROFILE_1 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-          "key.armourprofiles.select.1",
-          InputUtil.Type.KEYSYM,
-          GLFW.GLFW_KEY_Y,
-          "category.armourprofiles.profiles"
-        ));
-        PROFILE_2 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-          "key.armourprofiles.select.2",
-          InputUtil.Type.KEYSYM,
-          GLFW.GLFW_KEY_U,
-          "category.armourprofiles.profiles"
-        ));
-        PROFILE_3 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-          "key.armourprofiles.select.3",
-          InputUtil.Type.KEYSYM,
-          GLFW.GLFW_KEY_I,
-          "category.armourprofiles.profiles"
-        ));
+        KeyBindingHelper.registerKeyBinding(EQUIP_PREV);
+        KeyBindingHelper.registerKeyBinding(EQUIP_NEXT);
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (PROFILE_1.wasPressed()) {
-                ClientPlayNetworking.send(new EquipSlotC2SPacket(0));
+            if (timer > 0) {
+                timer--;
+                return;
             }
-            while (PROFILE_2.wasPressed()) {
-                ClientPlayNetworking.send(new EquipSlotC2SPacket(1));
+            while (EQUIP_PREV.wasPressed()) {
+                ClientPlayNetworking.send(new CycleEquippedC2S(false));
+                timer = 10;
             }
-            while (PROFILE_3.wasPressed()) {
-                ClientPlayNetworking.send(new EquipSlotC2SPacket(2));
+            while (EQUIP_NEXT.wasPressed()) {
+                ClientPlayNetworking.send(new CycleEquippedC2S(true));
+                timer = 10;
             }
         });
 

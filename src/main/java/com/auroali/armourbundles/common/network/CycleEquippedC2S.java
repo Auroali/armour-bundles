@@ -6,9 +6,9 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 
-public record EquipSlotC2SPacket(int slot) implements CustomPayload {
-    public static PacketCodec<PacketByteBuf, EquipSlotC2SPacket> CODEC = PacketCodec.tuple(PacketCodecs.VAR_INT, EquipSlotC2SPacket::slot, EquipSlotC2SPacket::new);
-    public static final CustomPayload.Id<EquipSlotC2SPacket> ID = new Id<>(ArmourBundles.id("key_pressed"));
+public record CycleEquippedC2S(boolean useNext) implements CustomPayload {
+    public static PacketCodec<PacketByteBuf, CycleEquippedC2S> CODEC = PacketCodec.tuple(PacketCodecs.BOOL, CycleEquippedC2S::useNext, CycleEquippedC2S::new);
+    public static final CustomPayload.Id<CycleEquippedC2S> ID = new Id<>(ArmourBundles.id("swap_armor"));
 
     @Override
     public Id<? extends CustomPayload> getId() {

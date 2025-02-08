@@ -3,13 +3,17 @@ package com.auroali.armourbundles.common.items;
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.common.items.components.ArmourBundleContentsComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.StackReference;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.Identifier;
@@ -130,6 +134,129 @@ public class ArmourBundleItem extends Item {
             return ItemStack.EMPTY;
 
         return component.getSelectedStack();
+    }
+
+    public static void equipBundleItems(LivingEntity entity, ItemStack bundle) {
+        placeItemsIntoBundleOrInventory(entity);
+        ArmourBundleContentsComponent component = bundle.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
+        if (component == null)
+            return;
+
+
+        ArmourBundleContentsComponent.Builder builder = component.builder();
+        builder.setSelected(-1);
+        builder.clearBindings();
+
+        for (int i = 0; i < component.getStacks().size(); i++) {
+            ItemStack stack = builder.removeSelected();
+            if (stack.isEmpty())
+                break;
+
+            boolean equipped = false;
+            for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
+                if (builder.hasBinding(slot) || !entity.canEquip(stack, slot))
+                    continue;
+
+                equipped = true;
+                builder.bindItem(slot, stack);
+                entity.equipStack(slot, stack);
+                break;
+            }
+
+            if (!equipped)
+                builder.add(stack);
+        }
+
+        bundle.set(ArmourBundles.ARMOUR_BUNDLE_CONTENTS, builder.build());
+    }
+
+    public static boolean matchesEquipped(LivingEntity entity, ItemStack bundle) {
+        ArmourBundleContentsComponent component = bundle.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
+        if (component == null || component.getBoundEquipment().isEmpty())
+            return false;
+
+        for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
+            ItemStack equipped = entity.getEquippedStack(slot);
+            ItemStack bound = component.getBoundEquipment().getOrDefault(slot, ItemStack.EMPTY);
+            if (!ItemStack.areEqual(equipped, bound))
+                return false;
+        }
+        return true;
+    }
+
+    public static int getEquippedBundleIndex(PlayerEntity entity) {
+        for (int i = 0; i < entity.getInventory().main.size(); i++) {
+            ItemStack stack = entity.getInventory().main.get(i);
+            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && matchesEquipped(entity, stack))
+                return i;
+        }
+        return -1;
+    }
+
+    public static ItemStack getNextArmourBundle(PlayerEntity entity, int index) {
+        int start = index == -1 ? 0 : index;
+        for (int i = start + 1; i < entity.getInventory().main.size(); i++) {
+            ItemStack stack = entity.getInventory().main.get(i);
+            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS))
+                return stack;
+        }
+        return ItemStack.EMPTY;
+    }
+
+    public static ItemStack getPreviousArmourBundle(PlayerEntity entity, int index) {
+        int start = index == -1 ? entity.getInventory().main.size() - 1 : index;
+        for (int i = start - 1; i >= 0; i--) {
+            ItemStack stack = entity.getInventory().main.get(i);
+            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS))
+                return stack;
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static void placeItemsIntoBundleOrInventory(LivingEntity entity) {
+        if (!(entity.getWorld() instanceof ServerWorld world))
+            return;
+
+        if (entity instanceof PlayerEntity player) {
+            PlayerInventory inventory = player.getInventory();
+            ItemStack bundle = ItemStack.EMPTY;
+            for (ItemStack stack : inventory.main) {
+                if (!matchesEquipped(entity, stack))
+                    continue;
+                bundle = stack;
+                break;
+            }
+
+            if (bundle.isEmpty()) {
+                for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
+                    ItemStack equipped = player.getEquippedStack(slot);
+                    if (!equipped.isEmpty() && !player.getInventory().insertStack(equipped))
+                        player.dropItem(equipped, true);
+                }
+                return;
+            }
+
+            ArmourBundleContentsComponent component = bundle.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
+            ArmourBundleContentsComponent.Builder builder = component.builder();
+            for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
+                ItemStack stack = player.getEquippedStack(slot);
+                if (stack.isEmpty())
+                    continue;
+                player.equipStack(slot, ItemStack.EMPTY);
+                builder.add(stack);
+                if (!stack.isEmpty() && !inventory.insertStack(stack))
+                    player.dropItem(stack, true);
+            }
+            builder.setSelected(-1);
+            builder.clearBindings();
+            bundle.set(ArmourBundles.ARMOUR_BUNDLE_CONTENTS, builder.build());
+        }
+
+        for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
+            ItemStack stack = entity.getEquippedStack(slot);
+            entity.dropStack(world, stack);
+            entity.equipStack(slot, ItemStack.EMPTY);
+        }
     }
 
     private void onContentChanged(PlayerEntity user) {

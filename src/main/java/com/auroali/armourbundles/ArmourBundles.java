@@ -3,7 +3,7 @@ package com.auroali.armourbundles;
 import com.auroali.armourbundles.common.items.ArmourBundleItem;
 import com.auroali.armourbundles.common.items.components.ArmourBundleContentsComponent;
 import com.auroali.armourbundles.common.network.ArmourBundleScrollC2S;
-import com.auroali.armourbundles.common.network.EquipSlotC2SPacket;
+import com.auroali.armourbundles.common.network.CycleEquippedC2S;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -55,7 +56,7 @@ public class ArmourBundles implements ModInitializer {
               content.add(ARMOUR_BUNDLE);
           });
 
-        PayloadTypeRegistry.playC2S().register(EquipSlotC2SPacket.ID, EquipSlotC2SPacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(CycleEquippedC2S.ID, CycleEquippedC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(ArmourBundleScrollC2S.ID, ArmourBundleScrollC2S.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(ArmourBundleScrollC2S.ID, (packet, ctx) -> {
@@ -67,6 +68,15 @@ public class ArmourBundles implements ModInitializer {
                 return;
             Slot slot = handler.getSlot(packet.slot());
             ArmourBundleItem.setSelectedStack(slot.getStack(), packet.selected());
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(CycleEquippedC2S.ID, (packet, ctx) -> {
+            int index = ArmourBundleItem.getEquippedBundleIndex(ctx.player());
+            ItemStack bundle = packet.useNext() ? ArmourBundleItem.getNextArmourBundle(ctx.player(), index) : ArmourBundleItem.getPreviousArmourBundle(ctx.player(), index);
+            if (bundle.isEmpty())
+                return;
+
+            ArmourBundleItem.equipBundleItems(ctx.player(), bundle);
         });
     }
 

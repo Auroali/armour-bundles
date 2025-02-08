@@ -2,7 +2,9 @@ package com.auroali.armourbundles.common.items.components;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.network.RegistryByteBuf;
@@ -10,29 +12,48 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Function;
 
 public class ArmourBundleContentsComponent implements TooltipData {
     public static final int MAX_STACKS = 4;
+    public static final EnumSet<EquipmentSlot> VALID_SLOTS = EnumSet.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
+    public static final ArmourBundleContentsComponent DEFAULT = new ArmourBundleContentsComponent(List.of(), new EnumMap<>(EquipmentSlot.class), -1);
     public static final Codec<ArmourBundleContentsComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
       ItemStack.CODEC.listOf().fieldOf("stacks").forGetter(ArmourBundleContentsComponent::getStacks),
+      Codec.unboundedMap(EquipmentSlot.CODEC, ItemStack.CODEC)
+        .xmap(EnumMap::new, Function.identity())
+        .validate(map -> {
+            for (EquipmentSlot slot : map.keySet()) {
+                if (!VALID_SLOTS.contains(slot))
+                    return DataResult.error(() -> "Invalid slot " + slot + " for bound item");
+            }
+            return DataResult.success(map);
+        })
+        .optionalFieldOf("boundItems", DEFAULT.boundEquipment)
+        .forGetter(ArmourBundleContentsComponent::getBoundEquipment),
       Codec.INT.fieldOf("selected").forGetter(ArmourBundleContentsComponent::getSelected)
     ).apply(instance, ArmourBundleContentsComponent::new));
     public static final PacketCodec<RegistryByteBuf, ArmourBundleContentsComponent> PACKET_CODEC = PacketCodec.tuple(
       ItemStack.PACKET_CODEC.collect(PacketCodecs.toList()),
       ArmourBundleContentsComponent::getStacks,
+      PacketCodecs.map(i -> new EnumMap<>(EquipmentSlot.class), EquipmentSlot.PACKET_CODEC, ItemStack.PACKET_CODEC),
+      ArmourBundleContentsComponent::getBoundEquipment,
       PacketCodecs.VAR_INT,
       ArmourBundleContentsComponent::getSelected,
       ArmourBundleContentsComponent::new
     );
 
-    public static final ArmourBundleContentsComponent DEFAULT = new ArmourBundleContentsComponent(List.of(), -1);
     protected List<ItemStack> stacks;
+    protected EnumMap<EquipmentSlot, ItemStack> boundEquipment;
     protected int selected;
 
-    protected ArmourBundleContentsComponent(List<ItemStack> stacks, int selected) {
+    protected ArmourBundleContentsComponent(List<ItemStack> stacks, EnumMap<EquipmentSlot, ItemStack> boundEquipment, int selected) {
         this.stacks = stacks;
         this.selected = selected;
+        this.boundEquipment = boundEquipment;
     }
 
     public List<ItemStack> getStacks() {
@@ -55,8 +76,12 @@ public class ArmourBundleContentsComponent implements TooltipData {
         return this.stacks.get(this.selected);
     }
 
+    public EnumMap<EquipmentSlot, ItemStack> getBoundEquipment() {
+        return this.boundEquipment;
+    }
+
     public Builder builder() {
-        return new Builder(new ArrayList<>(this.stacks), this.selected);
+        return new Builder(new ArrayList<>(this.stacks), new EnumMap<>(this.boundEquipment), this.selected);
     }
 
     @Override
@@ -69,9 +94,18 @@ public class ArmourBundleContentsComponent implements TooltipData {
         if (this == obj)
             return true;
 
-        if (obj instanceof ArmourBundleContentsComponent component)
-            return ItemStack.stacksEqual(this.stacks, component.stacks);
-
+        if (obj instanceof ArmourBundleContentsComponent component) {
+            if (!ItemStack.stacksEqual(this.stacks, component.stacks))
+                return false;
+            if (this.boundEquipment.size() != component.boundEquipment.size())
+                return false;
+            for (EquipmentSlot slot : this.boundEquipment.keySet()) {
+                if (!ItemStack.areEqual(this.boundEquipment.getOrDefault(slot, ItemStack.EMPTY), component.boundEquipment.getOrDefault(slot, ItemStack.EMPTY))) {
+                    return false;
+                }
+            }
+            return true;
+        }
         return false;
     }
 
@@ -81,10 +115,12 @@ public class ArmourBundleContentsComponent implements TooltipData {
 
     public static class Builder {
         private final List<ItemStack> stacks;
+        private final EnumMap<EquipmentSlot, ItemStack> boundItems;
         private int selected;
 
-        public Builder(List<ItemStack> stacks, int selected) {
+        public Builder(List<ItemStack> stacks, EnumMap<EquipmentSlot, ItemStack> boundItems, int selected) {
             this.stacks = stacks;
+            this.boundItems = boundItems;
             this.selected = selected;
         }
 
@@ -129,8 +165,20 @@ public class ArmourBundleContentsComponent implements TooltipData {
             return this.stacks.remove(index);
         }
 
+        public void bindItem(EquipmentSlot slot, ItemStack stack) {
+            this.boundItems.put(slot, stack.copy());
+        }
+
+        public void clearBindings() {
+            this.boundItems.clear();
+        }
+
+        public boolean hasBinding(EquipmentSlot slot) {
+            return this.boundItems.containsKey(slot);
+        }
+
         public ArmourBundleContentsComponent build() {
-            return new ArmourBundleContentsComponent(this.stacks, this.selected);
+            return new ArmourBundleContentsComponent(this.stacks, this.boundItems, this.selected);
         }
 
         private int insertIntoNewSlot(ItemStack stack) {
