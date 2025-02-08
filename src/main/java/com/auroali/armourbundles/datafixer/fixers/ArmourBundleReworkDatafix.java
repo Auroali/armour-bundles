@@ -24,13 +24,12 @@ public class ArmourBundleReworkDatafix extends DataFix {
           .put(stack.createString("selected"), stack.createInt(-1))
           .build());
 
-        Dynamic<?> output = stack.set("components", components
+        return stack.set("components", components
           .set("armourbundles:armour_bundle_contents", contents)
           .remove("armourbundles:armour_bundle_inventory")
           .remove("armourbundles:current_profile")
           .remove("armourbundles:profiles")
         );
-        return output;
     }
 
     @Override

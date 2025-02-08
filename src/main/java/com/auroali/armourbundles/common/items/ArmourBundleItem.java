@@ -15,8 +15,11 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.ClickType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import java.util.Optional;
 
@@ -116,6 +119,33 @@ public class ArmourBundleItem extends Item {
 
         setSelectedStack(stack, -1);
         return false;
+    }
+
+    @Override
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
+        ItemStack stack = user.getStackInHand(hand);
+        ArmourBundleContentsComponent component = stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
+        if (component == null)
+            return ActionResult.PASS;
+
+        // try to equip items if not crouching
+        if (!user.isSneaking()) {
+            equipBundleItems(user, stack);
+            return ActionResult.SUCCESS_SERVER;
+        }
+
+        // otherwise, insert them into the bundle
+        ArmourBundleContentsComponent.Builder builder = component.builder();
+        for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
+            ItemStack equipped = user.getEquippedStack(slot);
+            if (builder.add(equipped) > 0)
+                playInsertSound(user);
+        }
+
+        builder.setSelected(-1);
+        builder.clearBindings();
+        stack.set(ArmourBundles.ARMOUR_BUNDLE_CONTENTS, builder.build());
+        return ActionResult.SUCCESS_SERVER;
     }
 
     public static void setSelectedStack(ItemStack stack, int index) {
