@@ -197,7 +197,7 @@ public class ArmourBundleItem extends Item {
         int start = index == -1 ? 0 : index;
         for (int i = start + 1; i < entity.getInventory().main.size(); i++) {
             ItemStack stack = entity.getInventory().main.get(i);
-            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS))
+            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
         return ItemStack.EMPTY;
@@ -207,7 +207,7 @@ public class ArmourBundleItem extends Item {
         int start = index == -1 ? entity.getInventory().main.size() - 1 : index;
         for (int i = start - 1; i >= 0; i--) {
             ItemStack stack = entity.getInventory().main.get(i);
-            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS))
+            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
         return ItemStack.EMPTY;

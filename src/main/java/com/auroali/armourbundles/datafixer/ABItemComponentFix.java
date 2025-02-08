@@ -1,23 +1,21 @@
-package com.auroali.armourbundles.mixin;
+package com.auroali.armourbundles.datafixer;
 
+import com.auroali.dfuhooks.v1.api.DFUHooksItemComponentHook;
+import com.auroali.dfuhooks.v1.api.DFUHooksSchemaHook;
+import com.auroali.dfuhooks.v1.api.SchemaRegistry;
+import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
 import net.minecraft.datafixer.fix.ItemStackComponentizationFix;
 import net.minecraft.entity.EquipmentSlot;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-@Mixin(ItemStackComponentizationFix.class)
-public class ItemStackComponentizationFixMixin {
-    @Inject(method = "fixStack", at = @At("HEAD"))
-    private static void armourbundles$fixOldBundles(ItemStackComponentizationFix.StackData data, Dynamic<?> dynamic, CallbackInfo ci) {
+public class ABItemComponentFix extends DFUHooksItemComponentHook {
+    @Override
+    public void runHook(ItemStackComponentizationFix.StackData data, Dynamic<?> dynamic, int displayFlags) {
         if (data.itemEquals("armourbundles:armour_bundle")) {
             data.moveToComponent("Inv", "armourbundles:armour_bundle_inventory", dynamic.createList(Stream.empty()));
             data.moveToComponent("CurrentProfile", "armourbundles:current_profile");
@@ -25,7 +23,6 @@ public class ItemStackComponentizationFixMixin {
         }
     }
 
-    @Unique
     private static void fixProfiles(ItemStackComponentizationFix.StackData data, Dynamic<?> dynamic, String nbtKey, String componentId) {
         OptionalDynamic<?> optionalDynamic = data.getAndRemove(nbtKey);
         List<Map<String, Dynamic<?>>> profiles = optionalDynamic.asList(d -> d.asMap(k -> k.asString(""), v -> v));

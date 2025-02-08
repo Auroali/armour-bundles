@@ -1,37 +1,44 @@
 {
-	"schemaVersion": 1,
-	"id": "armourbundles",
-	"version": "${version}",
-	"name": "Armour Bundles",
-	"description": "Adds an item that allows quick-swapping between armour sets",
-	"authors": [
-		"Auroali"
-	],
-	"contact": {
-		"homepage": "https://modrinth.com/project/armour-bundles",
-		"sources": "https://github.com/Auroali/armour-bundles"
-	},
-	"license": "MIT",
-	"icon": "assets/armourbundles/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"com.auroali.armourbundles.ArmourBundles"
-		],
-		"client": [
-			"com.auroali.armourbundles.ArmourBundlesClient"
-		],
-		"fabric-datagen": [
-			"com.auroali.armourbundles.ArmourBundlesDataGenerator"
-		]
-	},
-	"mixins": [
-		"armourbundles.mixins.json"
-	],
-	"depends": {
-		"fabricloader": ">=0.16.9",
-		"minecraft": "~1.21.3",
-		"java": ">=21",
-		"fabric-api": "*"
-	}
+  "schemaVersion": 1,
+  "id": "armourbundles",
+  "version": "${version}",
+  "name": "Armour Bundles",
+  "description": "Adds an item that allows quick-swapping between armour sets",
+  "authors": [
+    "Auroali"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/project/armour-bundles",
+    "sources": "https://github.com/Auroali/armour-bundles"
+  },
+  "license": "MIT",
+  "icon": "assets/armourbundles/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.auroali.armourbundles.ArmourBundles"
+    ],
+    "client": [
+      "com.auroali.armourbundles.ArmourBundlesClient"
+    ],
+    "fabric-datagen": [
+      "com.auroali.armourbundles.ArmourBundlesDataGenerator"
+    ],
+    "dfuhooks-modify-schemas": [
+      "com.auroali.armourbundles.datafixer.ABDatafixer"
+    ],
+    "dfuhooks-item-component": [
+      "com.auroali.armourbundles.datafixer.ABItemComponentFix"
+    ]
+  },
+  "mixins": [
+    "armourbundles.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.21.3",
+    "java": ">=21",
+    "fabric-api": "*",
+    "dfuhooks": ">=1.0.0"
+  }
 }

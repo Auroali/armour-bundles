@@ -3,7 +3,6 @@
   "package": "com.auroali.armourbundles.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ItemStackComponentizationFixMixin"
   ],
   "injectors": {
     "defaultRequire": 1

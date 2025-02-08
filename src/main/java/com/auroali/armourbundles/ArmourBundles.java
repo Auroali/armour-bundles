@@ -48,7 +48,7 @@ public class ArmourBundles implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registries.DATA_COMPONENT_TYPE, id("armour_bundle_inventory"), ARMOUR_BUNDLE_CONTENTS);
+        Registry.register(Registries.DATA_COMPONENT_TYPE, id("armour_bundle_contents"), ARMOUR_BUNDLE_CONTENTS);
         Registry.register(Registries.ITEM, ARMOUR_BUNDLE_KEY, ARMOUR_BUNDLE);
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)

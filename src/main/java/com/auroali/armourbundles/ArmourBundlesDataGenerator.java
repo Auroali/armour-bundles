@@ -44,9 +44,8 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
             translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
             translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
             translationBuilder.add("item.armourprofiles.armour_bundle.current_profile", "Profile %d/%d");
-            translationBuilder.add("key.armourprofiles.select.1", "Equip Profile 1");
-            translationBuilder.add("key.armourprofiles.select.2", "Equip Profile 2");
-            translationBuilder.add("key.armourprofiles.select.3", "Equip Profile 3");
+            translationBuilder.add("key.armourprofiles.equip_prev", "Equip Previous");
+            translationBuilder.add("key.armourprofiles.equip_next", "Equip Next");
             translationBuilder.add("category.armourprofiles.profiles", "Armor Bundles");
             translationBuilder.add(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS, "Armor Bundle Insertables");
             translationBuilder.add("item.armourbundles.armourbundle.empty.description", "Can hold 4 pieces of armor");
