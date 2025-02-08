@@ -7,5 +7,11 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "client": [
+    "client.DrawContextMixin",
+    "client.HandledScreenMixin",
+    "client.ItemRendererAccessor",
+    "client.ItemRendererZAccessor"
+  ]
 }

@@ -1,5 +1,6 @@
-package com.auroali.armourbundles;
+package com.auroali.armourbundles.common.network;
 
+import com.auroali.armourbundles.ArmourBundles;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;

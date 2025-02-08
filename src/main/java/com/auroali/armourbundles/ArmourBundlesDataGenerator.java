@@ -24,100 +24,103 @@ import net.minecraft.registry.tag.ItemTags;
 import java.util.concurrent.CompletableFuture;
 
 public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
-	@Override
-	public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
-		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
-		pack.addProvider(ABLangGen::new);
-		pack.addProvider(ABModelGen::new);
-		pack.addProvider(ABRecipeProvider::new);
-		pack.addProvider(ABTagGenerator::new);
-	}
+    @Override
+    public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
+        FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+        pack.addProvider(ABLangGen::new);
+        pack.addProvider(ABModelGen::new);
+        pack.addProvider(ABRecipeProvider::new);
+        pack.addProvider(ABTagGenerator::new);
+    }
 
-	public static class ABLangGen extends FabricLanguageProvider {
-		protected ABLangGen(FabricDataOutput dataGenerator, CompletableFuture< RegistryWrapper.WrapperLookup > lookup) {
-			super(dataGenerator, lookup);
-		}
+    public static class ABLangGen extends FabricLanguageProvider {
+        protected ABLangGen(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+            super(dataGenerator, lookup);
+        }
 
-		@Override
-		public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
-			translationBuilder.add(ArmourBundles.ARMOUR_BUNDLE, "Armor Bundle");
-			translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
-			translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
-			translationBuilder.add("item.armourprofiles.armour_bundle.current_profile", "Profile %d/%d");
-			translationBuilder.add("key.armourprofiles.select.1", "Equip Profile 1");
-			translationBuilder.add("key.armourprofiles.select.2", "Equip Profile 2");
-			translationBuilder.add("key.armourprofiles.select.3", "Equip Profile 3");
-			translationBuilder.add("category.armourprofiles.profiles", "Armor Bundles");
-			translationBuilder.add(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS, "Armor Bundle Insertables");
-		}
-	}
+        @Override
+        public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+            translationBuilder.add(ArmourBundles.ARMOUR_BUNDLE, "Armor Bundle");
+            translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
+            translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
+            translationBuilder.add("item.armourprofiles.armour_bundle.current_profile", "Profile %d/%d");
+            translationBuilder.add("key.armourprofiles.select.1", "Equip Profile 1");
+            translationBuilder.add("key.armourprofiles.select.2", "Equip Profile 2");
+            translationBuilder.add("key.armourprofiles.select.3", "Equip Profile 3");
+            translationBuilder.add("category.armourprofiles.profiles", "Armor Bundles");
+            translationBuilder.add(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS, "Armor Bundle Insertables");
+            translationBuilder.add("item.armourbundles.armourbundle.empty.description", "Can hold 4 pieces of armor");
+        }
+    }
 
-	public static class ABModelGen extends FabricModelProvider {
-		public ABModelGen(FabricDataOutput dataGenerator) {
-			super(dataGenerator);
-		}
+    public static class ABModelGen extends FabricModelProvider {
+        public ABModelGen(FabricDataOutput dataGenerator) {
+            super(dataGenerator);
+        }
 
-		@Override
-		public void generateBlockStateModels(BlockStateModelGenerator blockStateModelGenerator) {
+        @Override
+        public void generateBlockStateModels(BlockStateModelGenerator blockStateModelGenerator) {
 
-		}
+        }
 
-		@Override
-		public void generateItemModels(ItemModelGenerator itemModelGenerator) {
-			itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, "_filled", Models.GENERATED);
-		}
-	}
+        @Override
+        public void generateItemModels(ItemModelGenerator itemModelGenerator) {
+            itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED);
+        }
+    }
 
-	public static class ABRecipeProvider extends FabricRecipeProvider {
-		public ABRecipeProvider(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
-			super(dataGenerator, lookup);
-		}
+    public static class ABRecipeProvider extends FabricRecipeProvider {
+        public ABRecipeProvider(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+            super(dataGenerator, lookup);
+        }
 
-		@Override
-		public RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup reg, RecipeExporter exporter) {
-			return new ABRecipeGenerator(reg, exporter);
-		}
+        @Override
+        public RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup reg, RecipeExporter exporter) {
+            return new ABRecipeGenerator(reg, exporter);
+        }
 
-		@Override
-		public String getName() {
-			return "Armour Bundles Recipe";
-		}
-	}
+        @Override
+        public String getName() {
+            return "Armour Bundles Recipe";
+        }
+    }
 
-	public static class ABRecipeGenerator extends RecipeGenerator {
-		RegistryEntryLookup<Item> lookup;
-		public ABRecipeGenerator(RegistryWrapper.WrapperLookup lookup, RecipeExporter exporter) {
-			super(lookup, exporter);
-			this.lookup = lookup.getOrThrow(RegistryKeys.ITEM);
-		}
-		@Override
-		public void generate() {
-			ShapedRecipeJsonBuilder.create(lookup, RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
-					.criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromItem(Items.NETHERITE_INGOT))
-					.criterion(hasItem(Items.RABBIT_HIDE), conditionsFromItem(Items.RABBIT_HIDE))
-					.pattern(" N ")
-					.pattern("R R")
-					.pattern(" R ")
-					.input('R', Items.RABBIT_HIDE)
-					.input('N', Items.NETHERITE_INGOT)
-					.offerTo(exporter);
-		}
-	}
+    public static class ABRecipeGenerator extends RecipeGenerator {
+        RegistryEntryLookup<Item> lookup;
 
-	public static class ABTagGenerator extends FabricTagProvider<Item> {
-		public ABTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-			super(output, RegistryKeys.ITEM, registriesFuture);
-		}
+        public ABRecipeGenerator(RegistryWrapper.WrapperLookup lookup, RecipeExporter exporter) {
+            super(lookup, exporter);
+            this.lookup = lookup.getOrThrow(RegistryKeys.ITEM);
+        }
 
-		@Override
-		protected void configure(RegistryWrapper.WrapperLookup arg) {
-			getOrCreateTagBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
-					.forceAddTag(ItemTags.CHEST_ARMOR)
-					.forceAddTag(ItemTags.FOOT_ARMOR)
-					.forceAddTag(ItemTags.LEG_ARMOR)
-					.forceAddTag(ItemTags.HEAD_ARMOR)
-					.add(Items.ELYTRA)
-					.add(Items.CARVED_PUMPKIN);
-		}
-	}
+        @Override
+        public void generate() {
+            ShapedRecipeJsonBuilder.create(lookup, RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
+              .criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromItem(Items.NETHERITE_INGOT))
+              .criterion(hasItem(Items.RABBIT_HIDE), conditionsFromItem(Items.RABBIT_HIDE))
+              .pattern(" N ")
+              .pattern("R R")
+              .pattern(" R ")
+              .input('R', Items.RABBIT_HIDE)
+              .input('N', Items.NETHERITE_INGOT)
+              .offerTo(exporter);
+        }
+    }
+
+    public static class ABTagGenerator extends FabricTagProvider<Item> {
+        public ABTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, RegistryKeys.ITEM, registriesFuture);
+        }
+
+        @Override
+        protected void configure(RegistryWrapper.WrapperLookup arg) {
+            getOrCreateTagBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
+              .forceAddTag(ItemTags.CHEST_ARMOR)
+              .forceAddTag(ItemTags.FOOT_ARMOR)
+              .forceAddTag(ItemTags.LEG_ARMOR)
+              .forceAddTag(ItemTags.HEAD_ARMOR)
+              .add(Items.ELYTRA)
+              .add(Items.CARVED_PUMPKIN);
+        }
+    }
 }

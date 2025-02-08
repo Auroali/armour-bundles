@@ -1,0 +1,6 @@
+{
+  "parent": "armourbundles:item/armour_bundle",
+  "textures": {
+    "layer0": "armourbundles:item/armour_bundle_open_front"
+  }
+}
