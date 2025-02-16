@@ -33,8 +33,7 @@ public class ArmourBundleContentsComponent implements TooltipData {
             return DataResult.success(map);
         })
         .optionalFieldOf("boundItems", DEFAULT.boundEquipment)
-        .forGetter(ArmourBundleContentsComponent::getBoundEquipment),
-      Codec.INT.fieldOf("selected").forGetter(ArmourBundleContentsComponent::getSelected)
+        .forGetter(ArmourBundleContentsComponent::getBoundEquipment)
     ).apply(instance, ArmourBundleContentsComponent::new));
     public static final PacketCodec<RegistryByteBuf, ArmourBundleContentsComponent> PACKET_CODEC = PacketCodec.tuple(
       ItemStack.PACKET_CODEC.collect(PacketCodecs.toList()),
@@ -49,6 +48,10 @@ public class ArmourBundleContentsComponent implements TooltipData {
     protected List<ItemStack> stacks;
     protected EnumMap<EquipmentSlot, ItemStack> boundEquipment;
     protected int selected;
+
+    protected ArmourBundleContentsComponent(List<ItemStack> stacks, EnumMap<EquipmentSlot, ItemStack> boundEquipment) {
+        this(stacks, boundEquipment, -1);
+    }
 
     protected ArmourBundleContentsComponent(List<ItemStack> stacks, EnumMap<EquipmentSlot, ItemStack> boundEquipment, int selected) {
         this.stacks = stacks;
