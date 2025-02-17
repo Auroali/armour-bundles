@@ -1,4 +1,4 @@
-package com.auroali.armourbundles.common.items.components;
+package com.auroali.armourbundles.common.components;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.mojang.serialization.Codec;

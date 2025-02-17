@@ -1,6 +1,6 @@
 package com.auroali.armourbundles.client;
 
-import com.auroali.armourbundles.common.items.components.ArmourBundleContentsComponent;
+import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.TooltipComponent;

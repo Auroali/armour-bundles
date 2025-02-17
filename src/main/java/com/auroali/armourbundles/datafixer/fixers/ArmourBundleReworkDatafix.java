@@ -21,7 +21,6 @@ public class ArmourBundleReworkDatafix extends DataFix {
     public Dynamic<?> fixComponent(Dynamic<?> stack, Dynamic<?> components) {
         Dynamic<?> contents = stack.createMap(ImmutableMap.<Dynamic<?>, Dynamic<?>>builder()
           .put(stack.createString("stacks"), components.get("armourbundles:armour_bundle_inventory").orElseEmptyList())
-          .put(stack.createString("selected"), stack.createInt(-1))
           .build());
 
         return stack.set("components", components

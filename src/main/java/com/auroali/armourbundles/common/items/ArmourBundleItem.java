@@ -1,7 +1,7 @@
 package com.auroali.armourbundles.common.items;
 
 import com.auroali.armourbundles.ArmourBundles;
-import com.auroali.armourbundles.common.items.components.ArmourBundleContentsComponent;
+import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;

@@ -2,7 +2,7 @@ package com.auroali.armourbundles.client;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.common.items.ArmourBundleItem;
-import com.auroali.armourbundles.common.items.components.ArmourBundleContentsComponent;
+import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
 import com.auroali.armourbundles.common.network.ArmourBundleScrollC2S;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
