@@ -166,6 +166,46 @@ public class ArmourBundleItem extends Item {
         return component.getSelectedStack();
     }
 
+    @Override
+    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+        ArmourBundleContentsComponent component = stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
+        return component == null ? super.getTooltipData(stack) : Optional.of(component);
+    }
+
+    public Identifier getOpenBack() {
+        return this.openBack;
+    }
+
+    public Identifier getOpenFront() {
+        return this.openFront;
+    }
+
+    // from the vanilla bundle
+    private static void playRemoveOneSound(Entity entity) {
+        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
+    }
+
+    private static void playInsertSound(Entity entity) {
+        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
+    }
+
+    private static void playInsertFailSound(Entity entity) {
+        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT_FAIL, 1.0F, 1.0F);
+    }
+
+    private void onContentChanged(PlayerEntity user) {
+        ScreenHandler screenHandler = user.currentScreenHandler;
+        if (screenHandler != null) {
+            screenHandler.onContentChanged(user.getInventory());
+        }
+    }
+
+    /**
+     * Attempts to equip all items in the provided armour bundle
+     *
+     * @param entity the entity to equip items to
+     * @param bundle the armour bundle to equip items from
+     */
     public static void equipBundleItems(LivingEntity entity, ItemStack bundle) {
         placeItemsIntoBundleOrInventory(entity);
         ArmourBundleContentsComponent component = bundle.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
@@ -200,6 +240,13 @@ public class ArmourBundleItem extends Item {
         bundle.set(ArmourBundles.ARMOUR_BUNDLE_CONTENTS, builder.build());
     }
 
+    /**
+     * Check if the given armour bundle's bound items match the currently equipped items of the entity
+     *
+     * @param entity the entity to check
+     * @param bundle the bundle to check
+     * @return if the items match
+     */
     public static boolean matchesEquipped(LivingEntity entity, ItemStack bundle) {
         ArmourBundleContentsComponent component = bundle.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
         if (component == null || component.getBoundEquipment().isEmpty())
@@ -214,6 +261,12 @@ public class ArmourBundleItem extends Item {
         return true;
     }
 
+    /**
+     * Gets the index of the armour bundle that matches all currently equipped items
+     *
+     * @param entity the entity to check
+     * @return the index of the armour bundle, or -1 if one wasn't found
+     */
     public static int getEquippedBundleIndex(PlayerEntity entity) {
         for (int i = 0; i < entity.getInventory().main.size(); i++) {
             ItemStack stack = entity.getInventory().main.get(i);
@@ -223,6 +276,13 @@ public class ArmourBundleItem extends Item {
         return -1;
     }
 
+    /**
+     * Gets the next unequipped armour bundle in a player's inventory
+     *
+     * @param entity the player
+     * @param index  the starting index
+     * @return the next armour bundle, or empty if none was found
+     */
     public static ItemStack getNextArmourBundle(PlayerEntity entity, int index) {
         int start = index == -1 ? 0 : index;
         for (int i = start + 1; i < entity.getInventory().main.size(); i++) {
@@ -233,6 +293,13 @@ public class ArmourBundleItem extends Item {
         return ItemStack.EMPTY;
     }
 
+    /**
+     * Gets the previous unequipped armour bundle in a player's inventory
+     *
+     * @param entity the player
+     * @param index  the starting index
+     * @return the previous armour bundle, or empty if none was found
+     */
     public static ItemStack getPreviousArmourBundle(PlayerEntity entity, int index) {
         int start = index == -1 ? entity.getInventory().main.size() - 1 : index;
         for (int i = start - 1; i >= 0; i--) {
@@ -288,39 +355,4 @@ public class ArmourBundleItem extends Item {
             entity.equipStack(slot, ItemStack.EMPTY);
         }
     }
-
-    private void onContentChanged(PlayerEntity user) {
-        ScreenHandler screenHandler = user.currentScreenHandler;
-        if (screenHandler != null) {
-            screenHandler.onContentChanged(user.getInventory());
-        }
-    }
-
-    @Override
-    public Optional<TooltipData> getTooltipData(ItemStack stack) {
-        ArmourBundleContentsComponent component = stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
-        return component == null ? super.getTooltipData(stack) : Optional.of(component);
-    }
-
-    public Identifier getOpenBack() {
-        return this.openBack;
-    }
-
-    public Identifier getOpenFront() {
-        return this.openFront;
-    }
-
-    // from the vanilla bundle
-    private static void playRemoveOneSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
-    }
-
-    private static void playInsertSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
-    }
-
-    private static void playInsertFailSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT_FAIL, 1.0F, 1.0F);
-    }
-
 }

@@ -59,30 +59,55 @@ public class ArmourBundleContentsComponent implements TooltipData {
         this.boundEquipment = boundEquipment;
     }
 
+    /**
+     * @return all stacks stored in this bundle
+     */
     public List<ItemStack> getStacks() {
         return this.stacks;
     }
 
+    /**
+     * @return the current selected slot, or -1 if nothing is selected
+     */
     public int getSelected() {
         return this.selected;
     }
 
+    /**
+     * @return if this bundle has no items
+     */
     public boolean isEmpty() {
         return this.stacks.isEmpty();
     }
 
+    /**
+     * @return if this bundle has a selected stack
+     */
     public boolean hasSelected() {
         return this.selected >= 0 && this.selected < this.stacks.size();
     }
 
+    /**
+     * @return the currently selected item stack
+     */
     public ItemStack getSelectedStack() {
         return this.stacks.get(this.selected);
     }
 
+    /**
+     * Returns all currently bound equipment
+     *
+     * @return currently bound equipment, in the form of a map that associates each stack to its relevant slot
+     */
     public EnumMap<EquipmentSlot, ItemStack> getBoundEquipment() {
         return this.boundEquipment;
     }
 
+    /**
+     * Creates a builder to allow modifying this component
+     *
+     * @return the new builder
+     */
     public Builder builder() {
         return new Builder(new ArrayList<>(this.stacks), new EnumMap<>(this.boundEquipment), this.selected);
     }
@@ -121,12 +146,18 @@ public class ArmourBundleContentsComponent implements TooltipData {
         private final EnumMap<EquipmentSlot, ItemStack> boundItems;
         private int selected;
 
-        public Builder(List<ItemStack> stacks, EnumMap<EquipmentSlot, ItemStack> boundItems, int selected) {
+        protected Builder(List<ItemStack> stacks, EnumMap<EquipmentSlot, ItemStack> boundItems, int selected) {
             this.stacks = stacks;
             this.boundItems = boundItems;
             this.selected = selected;
         }
 
+        /**
+         * Adds an item stack to this builder
+         *
+         * @param stack the stack to add
+         * @return the amount of items that were successfully added
+         */
         public int add(ItemStack stack) {
             if (!isInsertableStack(stack))
                 return 0;
@@ -151,10 +182,20 @@ public class ArmourBundleContentsComponent implements TooltipData {
             return count;
         }
 
+        /**
+         * Sets the selected slot of this builder
+         *
+         * @param i the currently selected slot
+         */
         public void setSelected(int i) {
             this.selected = this.selected != i && this.selected <= this.stacks.size() ? i : -1;
         }
 
+        /**
+         * Removes the currently selected stack from this builder
+         *
+         * @return the currently selected item stack, or empty if nothing is selected
+         */
         public ItemStack removeSelected() {
             if (this.stacks.isEmpty())
                 return ItemStack.EMPTY;
@@ -168,18 +209,36 @@ public class ArmourBundleContentsComponent implements TooltipData {
             return this.stacks.remove(index);
         }
 
+        /**
+         * Binds an item stack to a specific slot
+         *
+         * @param slot  the slot to bind to
+         * @param stack the stack to bind
+         */
         public void bindItem(EquipmentSlot slot, ItemStack stack) {
             this.boundItems.put(slot, stack.copy());
         }
 
+        /**
+         * Clears all currently bound equipment
+         */
         public void clearBindings() {
             this.boundItems.clear();
         }
 
+        /**
+         * Check if an equipment slot has a bound item
+         *
+         * @param slot the slot to check
+         * @return if an item is bound to that slot
+         */
         public boolean hasBinding(EquipmentSlot slot) {
             return this.boundItems.containsKey(slot);
         }
 
+        /**
+         * @return an ArmourBundleContentsComponent with the information from this builder
+         */
         public ArmourBundleContentsComponent build() {
             return new ArmourBundleContentsComponent(this.stacks, this.boundItems, this.selected);
         }
