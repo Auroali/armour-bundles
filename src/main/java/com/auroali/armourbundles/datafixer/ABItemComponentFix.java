@@ -1,9 +1,6 @@
 package com.auroali.armourbundles.datafixer;
 
 import com.auroali.dfuhooks.v1.api.DFUHooksItemComponentHook;
-import com.auroali.dfuhooks.v1.api.DFUHooksSchemaHook;
-import com.auroali.dfuhooks.v1.api.SchemaRegistry;
-import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
 import net.minecraft.datafixer.fix.ItemStackComponentizationFix;

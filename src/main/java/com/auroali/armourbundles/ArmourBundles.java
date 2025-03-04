@@ -1,7 +1,7 @@
 package com.auroali.armourbundles;
 
-import com.auroali.armourbundles.common.items.ArmourBundleItem;
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
+import com.auroali.armourbundles.common.items.ArmourBundleItem;
 import com.auroali.armourbundles.common.network.ArmourBundleScrollC2S;
 import com.auroali.armourbundles.common.network.CycleEquippedC2S;
 import net.fabricmc.api.ModInitializer;

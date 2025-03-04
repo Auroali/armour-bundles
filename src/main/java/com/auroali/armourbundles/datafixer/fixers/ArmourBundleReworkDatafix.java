@@ -1,17 +1,11 @@
 package com.auroali.armourbundles.datafixer.fixers;
 
 import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
-import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.datafixer.Schemas;
 import net.minecraft.datafixer.TypeReferences;
-
-import java.util.HashMap;
 
 public class ArmourBundleReworkDatafix extends DataFix {
     public ArmourBundleReworkDatafix(Schema outputSchema, boolean changesType) {

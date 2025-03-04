@@ -9,7 +9,8 @@
   ],
   "contact": {
     "homepage": "https://modrinth.com/project/armour-bundles",
-    "sources": "https://github.com/Auroali/armour-bundles"
+    "sources": "https://github.com/Auroali/armour-bundles",
+    "issues": "https://github.com/Auroali/armour-bundles/issues"
   },
   "license": "MIT",
   "icon": "assets/armourbundles/icon.png",
