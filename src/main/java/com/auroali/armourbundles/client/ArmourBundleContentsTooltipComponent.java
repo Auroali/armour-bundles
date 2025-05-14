@@ -64,7 +64,7 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
         if (this.contents.getBoundEquipment().isEmpty())
             return;
 
-        context.drawTextWrapped(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 16777215);
+        context.drawWrappedTextWithShadow(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 16777215);
 
         int index = 0;
         for (ItemStack stack : this.contents.getBoundEquipment().values()) {
@@ -107,7 +107,7 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
     }
 
     public void drawEmpty(TextRenderer renderer, int x, int y, int width, int height, DrawContext context) {
-        context.drawTextWrapped(renderer, BUNDLE_EMPTY_DESCRIPTION, x + this.getXMargin(width), y, 96, 0xaaaaaa);
+        context.drawWrappedTextWithShadow(renderer, BUNDLE_EMPTY_DESCRIPTION, x + this.getXMargin(width), y, 96, 0xaaaaaa);
         this.drawProgressBar(renderer, context, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 4);
         this.drawBoundItems(context, renderer, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 17);
     }

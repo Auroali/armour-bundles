@@ -268,8 +268,8 @@ public class ArmourBundleItem extends Item {
      * @return the index of the armour bundle, or -1 if one wasn't found
      */
     public static int getEquippedBundleIndex(PlayerEntity entity) {
-        for (int i = 0; i < entity.getInventory().main.size(); i++) {
-            ItemStack stack = entity.getInventory().main.get(i);
+        for (int i = 0; i < entity.getInventory().getMainStacks().size(); i++) {
+            ItemStack stack = entity.getInventory().getMainStacks().get(i);
             if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && matchesEquipped(entity, stack))
                 return i;
         }
@@ -285,8 +285,8 @@ public class ArmourBundleItem extends Item {
      */
     public static ItemStack getNextArmourBundle(PlayerEntity entity, int index) {
         int start = index == -1 ? 0 : index;
-        for (int i = start + 1; i < entity.getInventory().main.size(); i++) {
-            ItemStack stack = entity.getInventory().main.get(i);
+        for (int i = start + 1; i < entity.getInventory().getMainStacks().size(); i++) {
+            ItemStack stack = entity.getInventory().getMainStacks().get(i);
             if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
@@ -301,9 +301,9 @@ public class ArmourBundleItem extends Item {
      * @return the previous armour bundle, or empty if none was found
      */
     public static ItemStack getPreviousArmourBundle(PlayerEntity entity, int index) {
-        int start = index == -1 ? entity.getInventory().main.size() - 1 : index;
+        int start = index == -1 ? entity.getInventory().getMainStacks().size() - 1 : index;
         for (int i = start - 1; i >= 0; i--) {
-            ItemStack stack = entity.getInventory().main.get(i);
+            ItemStack stack = entity.getInventory().getMainStacks().get(i);
             if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
@@ -317,7 +317,7 @@ public class ArmourBundleItem extends Item {
         if (entity instanceof PlayerEntity player) {
             PlayerInventory inventory = player.getInventory();
             ItemStack bundle = ItemStack.EMPTY;
-            for (ItemStack stack : inventory.main) {
+            for (ItemStack stack : inventory.getMainStacks()) {
                 if (!matchesEquipped(entity, stack))
                     continue;
                 bundle = stack;

@@ -1,25 +1,33 @@
 package com.auroali.armourbundles;
 
+import com.auroali.armourbundles.client.render.item.model.ArmourBundleSelectedItemModel;
+import com.auroali.armourbundles.client.render.item.property.ArmourBundleHasSelectedItemProperty;
+import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.data.client.BlockStateModelGenerator;
-import net.minecraft.data.client.ItemModelGenerator;
-import net.minecraft.data.client.Models;
-import net.minecraft.data.server.recipe.RecipeExporter;
-import net.minecraft.data.server.recipe.RecipeGenerator;
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
+import net.minecraft.client.data.BlockStateModelGenerator;
+import net.minecraft.client.data.ItemModelGenerator;
+import net.minecraft.client.data.ItemModels;
+import net.minecraft.client.data.Models;
+import net.minecraft.client.render.item.model.ItemModel;
+import net.minecraft.client.render.item.property.select.DisplayContextProperty;
+import net.minecraft.data.recipe.RecipeExporter;
+import net.minecraft.data.recipe.RecipeGenerator;
+import net.minecraft.data.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.util.Identifier;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -65,7 +73,21 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
 
         @Override
         public void generateItemModels(ItemModelGenerator itemModelGenerator) {
-            itemModelGenerator.register(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED);
+            ItemModel.Unbaked regular = ItemModels.basic(itemModelGenerator.upload(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED));
+            Identifier back = ArmourBundles.id("item/armour_bundle_open_back");
+            Identifier front = ArmourBundles.id("item/armour_bundle_open_front");
+            ItemModel.Unbaked composite = ItemModels.composite(ItemModels.basic(back), new ArmourBundleSelectedItemModel.Unbaked(), ItemModels.basic(front));
+            itemModelGenerator.output.accept(
+              ArmourBundles.ARMOUR_BUNDLE,
+              ItemModels.select(
+                new DisplayContextProperty(),
+                regular,
+                ItemModels.switchCase(
+                  ItemDisplayContext.GUI,
+                  ItemModels.condition(new ArmourBundleHasSelectedItemProperty(), composite, regular)
+                )
+              )
+            );
         }
     }
 
@@ -121,8 +143,11 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
               .forceAddTag(ItemTags.FOOT_ARMOR)
               .forceAddTag(ItemTags.LEG_ARMOR)
               .forceAddTag(ItemTags.HEAD_ARMOR)
-              .add(Items.ELYTRA)
-              .add(Items.CARVED_PUMPKIN);
+              .forceAddTag(ItemTags.SKULLS)
+              .add(
+                Items.ELYTRA,
+                Items.CARVED_PUMPKIN
+              );
         }
     }
 }
