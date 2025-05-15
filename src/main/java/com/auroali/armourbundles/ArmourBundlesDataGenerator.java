@@ -74,9 +74,15 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
         @Override
         public void generateItemModels(ItemModelGenerator itemModelGenerator) {
             ItemModel.Unbaked regular = ItemModels.basic(itemModelGenerator.upload(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED));
-            Identifier back = ArmourBundles.id("item/armour_bundle_open_back");
-            Identifier front = ArmourBundles.id("item/armour_bundle_open_front");
-            ItemModel.Unbaked composite = ItemModels.composite(ItemModels.basic(back), new ArmourBundleSelectedItemModel.Unbaked(), ItemModels.basic(front));
+            Identifier back = itemModelGenerator.uploadOpenBundleModel(ArmourBundles.ARMOUR_BUNDLE, Models.TEMPLATE_BUNDLE_OPEN_BACK, "_open_back");
+            Identifier front = itemModelGenerator.uploadOpenBundleModel(ArmourBundles.ARMOUR_BUNDLE, Models.TEMPLATE_BUNDLE_OPEN_FRONT, "_open_front");
+            // represents the inventory model
+            ItemModel.Unbaked composite = ItemModels.composite(
+              ItemModels.basic(back),
+              new ArmourBundleSelectedItemModel.Unbaked(),
+              ItemModels.basic(front)
+            );
+
             itemModelGenerator.output.accept(
               ArmourBundles.ARMOUR_BUNDLE,
               ItemModels.select(
