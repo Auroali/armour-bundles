@@ -1,7 +1,6 @@
 package com.auroali.armourbundles.client.render.item.model;
 
 import com.auroali.armourbundles.common.items.ArmourBundleItem;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.render.item.ItemRenderState;
