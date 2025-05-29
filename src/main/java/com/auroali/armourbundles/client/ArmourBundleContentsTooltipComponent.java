@@ -2,9 +2,9 @@ package com.auroali.armourbundles.client;
 
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -77,18 +77,18 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
         int stackIndex = this.contents.getStacks().size() - index;
         ItemStack stack = this.contents.getStacks().get(stackIndex);
         if (stackIndex == this.contents.getSelected())
-            context.drawGuiTexture(RenderLayer::getGuiTextured, BUNDLE_SLOT_HIGHLIGHT_BACK_TEXTURE, x, y, 24, 24);
-        else context.drawGuiTexture(RenderLayer::getGuiTextured, BUNDLE_SLOT_BACKGROUND_TEXTURE, x, y, 24, 24);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_HIGHLIGHT_BACK_TEXTURE, x, y, 24, 24);
+        else context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_BACKGROUND_TEXTURE, x, y, 24, 24);
 
         context.drawItem(stack, x + 4, y + 4, index);
         context.drawStackOverlay(renderer, stack, x + 4, y + 4);
         if (stackIndex == this.contents.getSelected())
-            context.drawGuiTexture(RenderLayer::getGuiTextured, BUNDLE_SLOT_HIGHLIGHT_FRONT_TEXTURE, x, y, 24, 24);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_HIGHLIGHT_FRONT_TEXTURE, x, y, 24, 24);
     }
 
     private void drawProgressBar(TextRenderer renderer, DrawContext context, int x, int y) {
-        context.drawGuiTexture(RenderLayer::getGuiTextured, this.getProgressBarTexture(), x + 1, y, this.getProgressBarWidth(), 13);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, BUNDLE_PROGRESS_BAR_BORDER_TEXTURE, x, y, 96, 13);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, this.getProgressBarTexture(), x + 1, y, this.getProgressBarWidth(), 13);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BUNDLE_PROGRESS_BAR_BORDER_TEXTURE, x, y, 96, 13);
         if (this.contents.getStacks().isEmpty()) {
             context.drawCenteredTextWithShadow(renderer, BUNDLE_EMPTY, x + 48, y + 3, 16777215);
         }

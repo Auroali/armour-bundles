@@ -136,23 +136,23 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class ABTagGenerator extends FabricTagProvider<Item> {
+    public static class ABTagGenerator extends FabricTagProvider.ItemTagProvider {
         public ABTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ITEM, registriesFuture);
+            super(output, registriesFuture);
         }
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup arg) {
-            getOrCreateTagBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
+            this.valueLookupBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
+              .add(
+                Items.ELYTRA,
+                Items.CARVED_PUMPKIN
+              )
               .forceAddTag(ItemTags.CHEST_ARMOR)
               .forceAddTag(ItemTags.FOOT_ARMOR)
               .forceAddTag(ItemTags.LEG_ARMOR)
               .forceAddTag(ItemTags.HEAD_ARMOR)
-              .forceAddTag(ItemTags.SKULLS)
-              .add(
-                Items.ELYTRA,
-                Items.CARVED_PUMPKIN
-              );
+              .forceAddTag(ItemTags.SKULLS);
         }
     }
 }

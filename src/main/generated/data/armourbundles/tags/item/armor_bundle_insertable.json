@@ -1,11 +1,11 @@
 {
   "values": [
+    "minecraft:elytra",
+    "minecraft:carved_pumpkin",
     "#minecraft:chest_armor",
     "#minecraft:foot_armor",
     "#minecraft:leg_armor",
     "#minecraft:head_armor",
-    "#minecraft:skulls",
-    "minecraft:elytra",
-    "minecraft:carved_pumpkin"
+    "#minecraft:skulls"
   ]
 }
