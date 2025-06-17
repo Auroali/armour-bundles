@@ -4,11 +4,14 @@ import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
 import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+
+import java.util.List;
 
 // basically just BundleTooltipComponent but for Armour Bundles
 public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
@@ -57,7 +60,15 @@ public class ArmourBundleContentsTooltipComponent implements TooltipComponent {
         Text name = selected.getFormattedName();
         int textWidth = renderer.getWidth(name.asOrderedText());
         int xPos = x + width / 2 - 12;
-        context.drawTooltip(renderer, name, xPos - textWidth / 2, y - 15, selected.get(DataComponentTypes.TOOLTIP_STYLE));
+        TooltipComponent component = TooltipComponent.of(name.asOrderedText());
+        context.drawTooltipImmediately(
+          renderer,
+          List.of(component),
+          xPos - textWidth / 2,
+          y - 15,
+          HoveredTooltipPositioner.INSTANCE,
+          selected.get(DataComponentTypes.TOOLTIP_STYLE)
+        );
     }
 
     private void drawBoundItems(DrawContext context, TextRenderer textRenderer, int x, int y) {
