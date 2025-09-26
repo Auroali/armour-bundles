@@ -36,8 +36,8 @@
     "armourbundles.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.9",
-    "minecraft": "~1.21.6",
+    "fabricloader": ">=0.17.2",
+    "minecraft": "~1.21.9",
     "java": ">=21",
     "fabric-api": "*",
     "dfuhooks": ">=1.0.0"

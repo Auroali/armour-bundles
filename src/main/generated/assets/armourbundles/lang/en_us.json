@@ -1,5 +1,4 @@
 {
-  "category.armourprofiles.profiles": "Armor Bundles",
   "item.armourbundles.armour_bundle": "Armor Bundle",
   "item.armourbundles.armourbundle.bound.description": "Bound Armor",
   "item.armourbundles.armourbundle.empty.description": "Can hold 4 pieces of armor",
@@ -8,5 +7,6 @@
   "item.armourprofiles.armour_bundle.profile_set": "Set profile %d!",
   "key.armourprofiles.equip_next": "Equip Next",
   "key.armourprofiles.equip_prev": "Equip Previous",
+  "key.category.armourprofiles.keybinds": "Armor Bundles",
   "tag.item.armourbundles.armor_bundle_insertable": "Armor Bundle Insertables"
 }

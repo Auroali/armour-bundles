@@ -14,20 +14,21 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.item.model.ItemModelTypes;
 import net.minecraft.client.render.item.property.bool.BooleanProperties;
 import net.minecraft.client.util.InputUtil;
-import org.lwjgl.glfw.GLFW;
 
 public class ArmourBundlesClient implements ClientModInitializer {
+    public static KeyBinding.Category CATEGORY = KeyBinding.Category.create(ArmourBundles.id("keybinds"));
+
     public static KeyBinding EQUIP_PREV = new KeyBinding(
       "key.armourprofiles.equip_prev",
       InputUtil.Type.KEYSYM,
-      GLFW.GLFW_KEY_Y,
-      "category.armourprofiles.profiles"
+      InputUtil.GLFW_KEY_Y,
+      CATEGORY
     );
     public static KeyBinding EQUIP_NEXT = new KeyBinding(
       "key.armourprofiles.equip_next",
       InputUtil.Type.KEYSYM,
-      GLFW.GLFW_KEY_U,
-      "category.armourprofiles.profiles"
+      InputUtil.GLFW_KEY_U,
+      CATEGORY
     );
 
     int timer;

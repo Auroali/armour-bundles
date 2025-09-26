@@ -182,11 +182,11 @@ public class ArmourBundleItem extends Item {
 
     // from the vanilla bundle
     private static void playRemoveOneSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getEntityWorld().getRandom().nextFloat() * 0.4F);
     }
 
     private static void playInsertSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getWorld().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getEntityWorld().getRandom().nextFloat() * 0.4F);
     }
 
     private static void playInsertFailSound(Entity entity) {
@@ -311,7 +311,7 @@ public class ArmourBundleItem extends Item {
     }
 
     private static void placeItemsIntoBundleOrInventory(LivingEntity entity) {
-        if (!(entity.getWorld() instanceof ServerWorld world))
+        if (!(entity.getEntityWorld() instanceof ServerWorld world))
             return;
 
         if (entity instanceof PlayerEntity player) {
