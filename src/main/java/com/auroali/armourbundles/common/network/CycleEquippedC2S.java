@@ -1,17 +1,17 @@
 package com.auroali.armourbundles.common.network;
 
 import com.auroali.armourbundles.ArmourBundles;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record CycleEquippedC2S(boolean useNext) implements CustomPayload {
-    public static PacketCodec<PacketByteBuf, CycleEquippedC2S> CODEC = PacketCodec.tuple(PacketCodecs.BOOLEAN, CycleEquippedC2S::useNext, CycleEquippedC2S::new);
-    public static final CustomPayload.Id<CycleEquippedC2S> ID = new Id<>(ArmourBundles.id("swap_armor"));
+public record CycleEquippedC2S(boolean useNext) implements CustomPacketPayload {
+    public static StreamCodec<FriendlyByteBuf, CycleEquippedC2S> CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, CycleEquippedC2S::useNext, CycleEquippedC2S::new);
+    public static final CustomPacketPayload.Type<CycleEquippedC2S> ID = new Type<>(ArmourBundles.id("swap_armor"));
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

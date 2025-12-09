@@ -8,19 +8,19 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.component.ComponentType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 
 public class ArmourBundles implements ModInitializer {
     public static final String MODID = "armourbundles";
@@ -28,46 +28,46 @@ public class ArmourBundles implements ModInitializer {
     public static final Identifier OPEN_BACK_TEXTURE = id("armour_bundle_open_back");
     public static final Identifier OPEN_FRONT_TEXTURE = id("armour_bundle_open_front");
 
-    public static final ComponentType<ArmourBundleContentsComponent> ARMOUR_BUNDLE_CONTENTS = ComponentType
+    public static final DataComponentType<ArmourBundleContentsComponent> ARMOUR_BUNDLE_CONTENTS = DataComponentType
       .<ArmourBundleContentsComponent>builder()
-      .codec(ArmourBundleContentsComponent.CODEC)
-      .packetCodec(ArmourBundleContentsComponent.PACKET_CODEC)
-      .cache()
+      .persistent(ArmourBundleContentsComponent.CODEC)
+      .networkSynchronized(ArmourBundleContentsComponent.PACKET_CODEC)
+      .cacheEncoding()
       .build();
 
-    public static final RegistryKey<Item> ARMOUR_BUNDLE_KEY = RegistryKey.of(RegistryKeys.ITEM, id("armour_bundle"));
-    public static final ArmourBundleItem ARMOUR_BUNDLE = new ArmourBundleItem(OPEN_BACK_TEXTURE, OPEN_FRONT_TEXTURE, new Item.Settings()
-      .fireproof()
-      .maxCount(1)
+    public static final ResourceKey<Item> ARMOUR_BUNDLE_KEY = ResourceKey.create(Registries.ITEM, id("armour_bundle"));
+    public static final ArmourBundleItem ARMOUR_BUNDLE = new ArmourBundleItem(OPEN_BACK_TEXTURE, OPEN_FRONT_TEXTURE, new Item.Properties()
+      .fireResistant()
+      .stacksTo(1)
       .component(ARMOUR_BUNDLE_CONTENTS, ArmourBundleContentsComponent.DEFAULT)
-      .registryKey(ARMOUR_BUNDLE_KEY)
+      .setId(ARMOUR_BUNDLE_KEY)
       .rarity(Rarity.UNCOMMON)
     );
 
-    public static final TagKey<Item> VALID_ARMOUR_BUNDLE_ITEMS = TagKey.of(RegistryKeys.ITEM, id("armor_bundle_insertable"));
+    public static final TagKey<Item> VALID_ARMOUR_BUNDLE_ITEMS = TagKey.create(Registries.ITEM, id("armor_bundle_insertable"));
 
     @Override
     public void onInitialize() {
-        Registry.register(Registries.DATA_COMPONENT_TYPE, id("armour_bundle_contents"), ARMOUR_BUNDLE_CONTENTS);
-        Registry.register(Registries.ITEM, ARMOUR_BUNDLE_KEY, ARMOUR_BUNDLE);
+        Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, id("armour_bundle_contents"), ARMOUR_BUNDLE_CONTENTS);
+        Registry.register(BuiltInRegistries.ITEM, ARMOUR_BUNDLE_KEY, ARMOUR_BUNDLE);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT)
           .register(content -> {
-              content.add(ARMOUR_BUNDLE);
+              content.accept(ARMOUR_BUNDLE);
           });
 
         PayloadTypeRegistry.playC2S().register(CycleEquippedC2S.ID, CycleEquippedC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(ArmourBundleScrollC2S.ID, ArmourBundleScrollC2S.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(ArmourBundleScrollC2S.ID, (packet, ctx) -> {
-            ScreenHandler handler = ctx.player().currentScreenHandler;
+            AbstractContainerMenu handler = ctx.player().containerMenu;
             if (handler == null)
                 return;
 
             if (packet.slot() < 0 || packet.slot() >= handler.slots.size())
                 return;
             Slot slot = handler.getSlot(packet.slot());
-            ArmourBundleItem.setSelectedStack(slot.getStack(), packet.selected());
+            ArmourBundleItem.setSelectedStack(slot.getItem(), packet.selected());
         });
 
         ServerPlayNetworking.registerGlobalReceiver(CycleEquippedC2S.ID, (packet, ctx) -> {
@@ -81,6 +81,6 @@ public class ArmourBundles implements ModInitializer {
     }
 
     public static Identifier id(String id) {
-        return Identifier.of(MODID, id);
+        return Identifier.fromNamespaceAndPath(MODID, id);
     }
 }

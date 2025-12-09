@@ -9,25 +9,24 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.client.data.BlockStateModelGenerator;
-import net.minecraft.client.data.ItemModelGenerator;
-import net.minecraft.client.data.ItemModels;
-import net.minecraft.client.data.Models;
-import net.minecraft.client.render.item.model.ItemModel;
-import net.minecraft.client.render.item.property.select.DisplayContextProperty;
-import net.minecraft.data.recipe.RecipeExporter;
-import net.minecraft.data.recipe.RecipeGenerator;
-import net.minecraft.data.recipe.ShapedRecipeJsonBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.properties.select.DisplayContext;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.Items;
 import java.util.concurrent.CompletableFuture;
 
 public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
@@ -41,12 +40,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ABLangGen extends FabricLanguageProvider {
-        protected ABLangGen(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+        protected ABLangGen(FabricDataOutput dataGenerator, CompletableFuture<HolderLookup.Provider> lookup) {
             super(dataGenerator, lookup);
         }
 
         @Override
-        public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+        public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
             translationBuilder.add(ArmourBundles.ARMOUR_BUNDLE, "Armor Bundle");
             translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
             translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
@@ -66,30 +65,30 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
         }
 
         @Override
-        public void generateBlockStateModels(BlockStateModelGenerator blockStateModelGenerator) {
+        public void generateBlockStateModels(BlockModelGenerators blockStateModelGenerator) {
 
         }
 
         @Override
-        public void generateItemModels(ItemModelGenerator itemModelGenerator) {
-            ItemModel.Unbaked regular = ItemModels.basic(itemModelGenerator.upload(ArmourBundles.ARMOUR_BUNDLE, Models.GENERATED));
-            Identifier back = itemModelGenerator.uploadOpenBundleModel(ArmourBundles.ARMOUR_BUNDLE, Models.TEMPLATE_BUNDLE_OPEN_BACK, "_open_back");
-            Identifier front = itemModelGenerator.uploadOpenBundleModel(ArmourBundles.ARMOUR_BUNDLE, Models.TEMPLATE_BUNDLE_OPEN_FRONT, "_open_front");
+        public void generateItemModels(ItemModelGenerators itemModelGenerator) {
+            ItemModel.Unbaked regular = ItemModelUtils.plainModel(itemModelGenerator.createFlatItemModel(ArmourBundles.ARMOUR_BUNDLE, ModelTemplates.FLAT_ITEM));
+            Identifier back = itemModelGenerator.generateBundleCoverModel(ArmourBundles.ARMOUR_BUNDLE, ModelTemplates.BUNDLE_OPEN_BACK_INVENTORY, "_open_back");
+            Identifier front = itemModelGenerator.generateBundleCoverModel(ArmourBundles.ARMOUR_BUNDLE, ModelTemplates.BUNDLE_OPEN_FRONT_INVENTORY, "_open_front");
             // represents the inventory model
-            ItemModel.Unbaked composite = ItemModels.composite(
-              ItemModels.basic(back),
+            ItemModel.Unbaked composite = ItemModelUtils.composite(
+              ItemModelUtils.plainModel(back),
               new ArmourBundleSelectedItemModel.Unbaked(),
-              ItemModels.basic(front)
+              ItemModelUtils.plainModel(front)
             );
 
-            itemModelGenerator.output.accept(
+            itemModelGenerator.itemModelOutput.accept(
               ArmourBundles.ARMOUR_BUNDLE,
-              ItemModels.select(
-                new DisplayContextProperty(),
+              ItemModelUtils.select(
+                new DisplayContext(),
                 regular,
-                ItemModels.switchCase(
+                ItemModelUtils.when(
                   ItemDisplayContext.GUI,
-                  ItemModels.condition(new ArmourBundleHasSelectedItemProperty(), composite, regular)
+                  ItemModelUtils.conditional(new ArmourBundleHasSelectedItemProperty(), composite, regular)
                 )
               )
             );
@@ -97,12 +96,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ABRecipeProvider extends FabricRecipeProvider {
-        public ABRecipeProvider(FabricDataOutput dataGenerator, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+        public ABRecipeProvider(FabricDataOutput dataGenerator, CompletableFuture<HolderLookup.Provider> lookup) {
             super(dataGenerator, lookup);
         }
 
         @Override
-        public RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup reg, RecipeExporter exporter) {
+        public RecipeProvider createRecipeProvider(HolderLookup.Provider reg, RecipeOutput exporter) {
             return new ABRecipeGenerator(reg, exporter);
         }
 
@@ -112,37 +111,37 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class ABRecipeGenerator extends RecipeGenerator {
-        RegistryEntryLookup<Item> lookup;
+    public static class ABRecipeGenerator extends RecipeProvider {
+        HolderGetter<Item> lookup;
 
-        public ABRecipeGenerator(RegistryWrapper.WrapperLookup lookup, RecipeExporter exporter) {
+        public ABRecipeGenerator(HolderLookup.Provider lookup, RecipeOutput exporter) {
             super(lookup, exporter);
-            this.lookup = lookup.getOrThrow(RegistryKeys.ITEM);
+            this.lookup = lookup.lookupOrThrow(Registries.ITEM);
         }
 
         @Override
-        public void generate() {
-            ShapedRecipeJsonBuilder.create(lookup, RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
-              .criterion(hasItem(Items.STRING), conditionsFromItem(Items.STRING))
-              .criterion(hasItem(Items.NETHERITE_INGOT), conditionsFromItem(Items.NETHERITE_INGOT))
-              .criterion(hasItem(Items.RABBIT_HIDE), conditionsFromItem(Items.RABBIT_HIDE))
+        public void buildRecipes() {
+            ShapedRecipeBuilder.shaped(lookup, RecipeCategory.COMBAT, ArmourBundles.ARMOUR_BUNDLE)
+              .unlockedBy(getHasName(Items.STRING), has(Items.STRING))
+              .unlockedBy(getHasName(Items.NETHERITE_INGOT), has(Items.NETHERITE_INGOT))
+              .unlockedBy(getHasName(Items.RABBIT_HIDE), has(Items.RABBIT_HIDE))
               .pattern("S")
               .pattern("R")
               .pattern("N")
-              .input('R', Items.RABBIT_HIDE)
-              .input('N', Items.NETHERITE_INGOT)
-              .input('S', Items.STRING)
-              .offerTo(exporter);
+              .define('R', Items.RABBIT_HIDE)
+              .define('N', Items.NETHERITE_INGOT)
+              .define('S', Items.STRING)
+              .save(output);
         }
     }
 
     public static class ABTagGenerator extends FabricTagProvider.ItemTagProvider {
-        public ABTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public ABTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup arg) {
+        protected void addTags(HolderLookup.Provider arg) {
             this.valueLookupBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
               .add(
                 Items.ELYTRA,

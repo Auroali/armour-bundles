@@ -1,23 +1,23 @@
 package com.auroali.armourbundles.common.network;
 
 import com.auroali.armourbundles.ArmourBundles;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record ArmourBundleScrollC2S(int slot, int selected) implements CustomPayload {
-    public static final PacketCodec<PacketByteBuf, ArmourBundleScrollC2S> CODEC = PacketCodec.tuple(
-      PacketCodecs.VAR_INT,
+public record ArmourBundleScrollC2S(int slot, int selected) implements CustomPacketPayload {
+    public static final StreamCodec<FriendlyByteBuf, ArmourBundleScrollC2S> CODEC = StreamCodec.composite(
+      ByteBufCodecs.VAR_INT,
       ArmourBundleScrollC2S::slot,
-      PacketCodecs.VAR_INT,
+      ByteBufCodecs.VAR_INT,
       ArmourBundleScrollC2S::selected,
       ArmourBundleScrollC2S::new
     );
-    public static final CustomPayload.Id<ArmourBundleScrollC2S> ID = new Id<>(ArmourBundles.id("scroll"));
+    public static final CustomPacketPayload.Type<ArmourBundleScrollC2S> ID = new Type<>(ArmourBundles.id("scroll"));
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<ArmourBundleScrollC2S> type() {
         return ID;
     }
 }

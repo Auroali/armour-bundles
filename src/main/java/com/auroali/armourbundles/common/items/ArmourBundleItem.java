@@ -2,32 +2,31 @@ package com.auroali.armourbundles.common.items;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.StackReference;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ClickType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-
 import java.util.Optional;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class ArmourBundleItem extends Item {
     private final Identifier openBack;
     private final Identifier openFront;
 
-    public ArmourBundleItem(Identifier openBack, Identifier openFront, Item.Settings settings) {
+    public ArmourBundleItem(Identifier openBack, Identifier openFront, Item.Properties settings) {
         super(settings);
         this.openBack = openBack;
         this.openFront = openFront;
@@ -41,14 +40,14 @@ public class ArmourBundleItem extends Item {
     }
 
     @Override
-    public boolean onStackClicked(ItemStack stack, Slot slot, ClickType clickType, PlayerEntity player) {
+    public boolean overrideStackedOnOther(ItemStack stack, Slot slot, ClickAction clickType, Player player) {
         ArmourBundleContentsComponent component = stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
         if (component == null)
             return false;
 
         ArmourBundleContentsComponent.Builder builder = component.builder();
-        ItemStack other = slot.getStack();
-        if (clickType == ClickType.LEFT && !other.isEmpty()) {
+        ItemStack other = slot.getItem();
+        if (clickType == ClickAction.PRIMARY && !other.isEmpty()) {
             if (builder.add(other) == 0) {
                 playInsertFailSound(player);
                 return true;
@@ -60,12 +59,12 @@ public class ArmourBundleItem extends Item {
             return true;
         }
 
-        if (clickType == ClickType.RIGHT && other.isEmpty()) {
+        if (clickType == ClickAction.SECONDARY && other.isEmpty()) {
             ItemStack removed = builder.removeSelected();
             if (removed.isEmpty())
                 return false;
 
-            ItemStack remaining = slot.insertStack(removed);
+            ItemStack remaining = slot.safeInsert(removed);
             if (!remaining.isEmpty())
                 builder.add(remaining);
 
@@ -78,8 +77,8 @@ public class ArmourBundleItem extends Item {
     }
 
     @Override
-    public boolean onClicked(ItemStack stack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity player, StackReference cursorStackReference) {
-        if (clickType == ClickType.LEFT && otherStack.isEmpty()) {
+    public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player player, SlotAccess cursorStackReference) {
+        if (clickType == ClickAction.PRIMARY && otherStack.isEmpty()) {
             setSelectedStack(stack, -1);
             return false;
         }
@@ -89,8 +88,8 @@ public class ArmourBundleItem extends Item {
             return false;
 
         ArmourBundleContentsComponent.Builder builder = component.builder();
-        if (clickType == ClickType.LEFT && !otherStack.isEmpty()) {
-            if (!slot.canTakePartial(player) || builder.add(otherStack) == 0) {
+        if (clickType == ClickAction.PRIMARY && !otherStack.isEmpty()) {
+            if (!slot.allowModification(player) || builder.add(otherStack) == 0) {
                 playInsertFailSound(player);
                 return true;
             }
@@ -101,8 +100,8 @@ public class ArmourBundleItem extends Item {
             return true;
         }
 
-        if (clickType == ClickType.RIGHT && otherStack.isEmpty()) {
-            if (!slot.canTakePartial(player))
+        if (clickType == ClickAction.SECONDARY && otherStack.isEmpty()) {
+            if (!slot.allowModification(player))
                 return true;
 
             ItemStack removed = builder.removeSelected();
@@ -122,22 +121,22 @@ public class ArmourBundleItem extends Item {
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack stack = user.getItemInHand(hand);
         ArmourBundleContentsComponent component = stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
         if (component == null)
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
 
         // try to equip items if not crouching
-        if (!user.isSneaking()) {
+        if (!user.isShiftKeyDown()) {
             equipBundleItems(user, stack);
-            return ActionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS_SERVER;
         }
 
         // otherwise, insert them into the bundle
         ArmourBundleContentsComponent.Builder builder = component.builder();
         for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
-            ItemStack equipped = user.getEquippedStack(slot);
+            ItemStack equipped = user.getItemBySlot(slot);
             if (builder.add(equipped) > 0)
                 playInsertSound(user);
         }
@@ -145,7 +144,7 @@ public class ArmourBundleItem extends Item {
         builder.setSelected(-1);
         builder.clearBindings();
         stack.set(ArmourBundles.ARMOUR_BUNDLE_CONTENTS, builder.build());
-        return ActionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS_SERVER;
     }
 
     public static void setSelectedStack(ItemStack stack, int index) {
@@ -167,9 +166,9 @@ public class ArmourBundleItem extends Item {
     }
 
     @Override
-    public Optional<TooltipData> getTooltipData(ItemStack stack) {
+    public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
         ArmourBundleContentsComponent component = stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
-        return component == null ? super.getTooltipData(stack) : Optional.of(component);
+        return component == null ? super.getTooltipImage(stack) : Optional.of(component);
     }
 
     public Identifier getOpenBack() {
@@ -182,21 +181,21 @@ public class ArmourBundleItem extends Item {
 
     // from the vanilla bundle
     private static void playRemoveOneSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.getEntityWorld().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + entity.level().getRandom().nextFloat() * 0.4F);
     }
 
     private static void playInsertSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT, 0.8F, 0.8F + entity.getEntityWorld().getRandom().nextFloat() * 0.4F);
+        entity.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + entity.level().getRandom().nextFloat() * 0.4F);
     }
 
     private static void playInsertFailSound(Entity entity) {
-        entity.playSound(SoundEvents.ITEM_BUNDLE_INSERT_FAIL, 1.0F, 1.0F);
+        entity.playSound(SoundEvents.BUNDLE_INSERT_FAIL, 1.0F, 1.0F);
     }
 
-    private void onContentChanged(PlayerEntity user) {
-        ScreenHandler screenHandler = user.currentScreenHandler;
+    private void onContentChanged(Player user) {
+        AbstractContainerMenu screenHandler = user.containerMenu;
         if (screenHandler != null) {
-            screenHandler.onContentChanged(user.getInventory());
+            screenHandler.slotsChanged(user.getInventory());
         }
     }
 
@@ -224,12 +223,12 @@ public class ArmourBundleItem extends Item {
 
             boolean equipped = false;
             for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
-                if (builder.hasBinding(slot) || !entity.canEquip(stack, slot))
+                if (builder.hasBinding(slot) || !entity.isEquippableInSlot(stack, slot))
                     continue;
 
                 equipped = true;
                 builder.bindItem(slot, stack);
-                entity.equipStack(slot, stack);
+                entity.setItemSlot(slot, stack);
                 break;
             }
 
@@ -253,9 +252,9 @@ public class ArmourBundleItem extends Item {
             return false;
 
         for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
-            ItemStack equipped = entity.getEquippedStack(slot);
+            ItemStack equipped = entity.getItemBySlot(slot);
             ItemStack bound = component.getBoundEquipment().getOrDefault(slot, ItemStack.EMPTY);
-            if (!ItemStack.areEqual(equipped, bound))
+            if (!ItemStack.matches(equipped, bound))
                 return false;
         }
         return true;
@@ -267,10 +266,10 @@ public class ArmourBundleItem extends Item {
      * @param entity the entity to check
      * @return the index of the armour bundle, or -1 if one wasn't found
      */
-    public static int getEquippedBundleIndex(PlayerEntity entity) {
-        for (int i = 0; i < entity.getInventory().getMainStacks().size(); i++) {
-            ItemStack stack = entity.getInventory().getMainStacks().get(i);
-            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && matchesEquipped(entity, stack))
+    public static int getEquippedBundleIndex(Player entity) {
+        for (int i = 0; i < entity.getInventory().getNonEquipmentItems().size(); i++) {
+            ItemStack stack = entity.getInventory().getNonEquipmentItems().get(i);
+            if (stack.has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && matchesEquipped(entity, stack))
                 return i;
         }
         return -1;
@@ -283,11 +282,11 @@ public class ArmourBundleItem extends Item {
      * @param index  the starting index
      * @return the next armour bundle, or empty if none was found
      */
-    public static ItemStack getNextArmourBundle(PlayerEntity entity, int index) {
+    public static ItemStack getNextArmourBundle(Player entity, int index) {
         int start = index == -1 ? 0 : index;
-        for (int i = start + 1; i < entity.getInventory().getMainStacks().size(); i++) {
-            ItemStack stack = entity.getInventory().getMainStacks().get(i);
-            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
+        for (int i = start + 1; i < entity.getInventory().getNonEquipmentItems().size(); i++) {
+            ItemStack stack = entity.getInventory().getNonEquipmentItems().get(i);
+            if (stack.has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
         return ItemStack.EMPTY;
@@ -300,24 +299,24 @@ public class ArmourBundleItem extends Item {
      * @param index  the starting index
      * @return the previous armour bundle, or empty if none was found
      */
-    public static ItemStack getPreviousArmourBundle(PlayerEntity entity, int index) {
-        int start = index == -1 ? entity.getInventory().getMainStacks().size() - 1 : index;
+    public static ItemStack getPreviousArmourBundle(Player entity, int index) {
+        int start = index == -1 ? entity.getInventory().getNonEquipmentItems().size() - 1 : index;
         for (int i = start - 1; i >= 0; i--) {
-            ItemStack stack = entity.getInventory().getMainStacks().get(i);
-            if (stack.contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
+            ItemStack stack = entity.getInventory().getNonEquipmentItems().get(i);
+            if (stack.has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
         return ItemStack.EMPTY;
     }
 
     private static void placeItemsIntoBundleOrInventory(LivingEntity entity) {
-        if (!(entity.getEntityWorld() instanceof ServerWorld world))
+        if (!(entity.level() instanceof ServerLevel world))
             return;
 
-        if (entity instanceof PlayerEntity player) {
-            PlayerInventory inventory = player.getInventory();
+        if (entity instanceof Player player) {
+            Inventory inventory = player.getInventory();
             ItemStack bundle = ItemStack.EMPTY;
-            for (ItemStack stack : inventory.getMainStacks()) {
+            for (ItemStack stack : inventory.getNonEquipmentItems()) {
                 if (!matchesEquipped(entity, stack))
                     continue;
                 bundle = stack;
@@ -326,9 +325,9 @@ public class ArmourBundleItem extends Item {
 
             if (bundle.isEmpty()) {
                 for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
-                    ItemStack equipped = player.getEquippedStack(slot);
-                    if (!equipped.isEmpty() && !player.getInventory().insertStack(equipped))
-                        player.dropItem(equipped, true);
+                    ItemStack equipped = player.getItemBySlot(slot);
+                    if (!equipped.isEmpty() && !player.getInventory().add(equipped))
+                        player.drop(equipped, true);
                 }
                 return;
             }
@@ -336,13 +335,13 @@ public class ArmourBundleItem extends Item {
             ArmourBundleContentsComponent component = bundle.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
             ArmourBundleContentsComponent.Builder builder = component.builder();
             for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
-                ItemStack stack = player.getEquippedStack(slot);
+                ItemStack stack = player.getItemBySlot(slot);
                 if (stack.isEmpty())
                     continue;
-                player.equipStack(slot, ItemStack.EMPTY);
+                player.setItemSlot(slot, ItemStack.EMPTY);
                 builder.add(stack);
-                if (!stack.isEmpty() && !inventory.insertStack(stack))
-                    player.dropItem(stack, true);
+                if (!stack.isEmpty() && !inventory.add(stack))
+                    player.drop(stack, true);
             }
             builder.setSelected(-1);
             builder.clearBindings();
@@ -350,9 +349,9 @@ public class ArmourBundleItem extends Item {
         }
 
         for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
-            ItemStack stack = entity.getEquippedStack(slot);
-            entity.dropStack(world, stack);
-            entity.equipStack(slot, ItemStack.EMPTY);
+            ItemStack stack = entity.getItemBySlot(slot);
+            entity.spawnAtLocation(world, stack);
+            entity.setItemSlot(slot, ItemStack.EMPTY);
         }
     }
 }

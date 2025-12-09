@@ -5,29 +5,29 @@ import com.auroali.armourbundles.client.render.item.model.ArmourBundleSelectedIt
 import com.auroali.armourbundles.client.render.item.property.ArmourBundleHasSelectedItemProperty;
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
 import com.auroali.armourbundles.common.network.CycleEquippedC2S;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.item.model.ItemModelTypes;
-import net.minecraft.client.render.item.property.bool.BooleanProperties;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.renderer.item.ItemModels;
+import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperties;
 
 public class ArmourBundlesClient implements ClientModInitializer {
-    public static KeyBinding.Category CATEGORY = KeyBinding.Category.create(ArmourBundles.id("keybinds"));
+    public static KeyMapping.Category CATEGORY = KeyMapping.Category.register(ArmourBundles.id("keybinds"));
 
-    public static KeyBinding EQUIP_PREV = new KeyBinding(
+    public static KeyMapping EQUIP_PREV = new KeyMapping(
       "key.armourprofiles.equip_prev",
-      InputUtil.Type.KEYSYM,
-      InputUtil.GLFW_KEY_Y,
+      InputConstants.Type.KEYSYM,
+      InputConstants.KEY_Y,
       CATEGORY
     );
-    public static KeyBinding EQUIP_NEXT = new KeyBinding(
+    public static KeyMapping EQUIP_NEXT = new KeyMapping(
       "key.armourprofiles.equip_next",
-      InputUtil.Type.KEYSYM,
-      InputUtil.GLFW_KEY_U,
+      InputConstants.Type.KEYSYM,
+      InputConstants.KEY_U,
       CATEGORY
     );
 
@@ -44,11 +44,11 @@ public class ArmourBundlesClient implements ClientModInitializer {
                 timer--;
                 return;
             }
-            while (EQUIP_PREV.wasPressed()) {
+            while (EQUIP_PREV.consumeClick()) {
                 ClientPlayNetworking.send(new CycleEquippedC2S(false));
                 timer = 10;
             }
-            while (EQUIP_NEXT.wasPressed()) {
+            while (EQUIP_NEXT.consumeClick()) {
                 ClientPlayNetworking.send(new CycleEquippedC2S(true));
                 timer = 10;
             }
@@ -60,8 +60,8 @@ public class ArmourBundlesClient implements ClientModInitializer {
             return null;
         });
 
-        ItemModelTypes.ID_MAPPER.put(ArmourBundles.id("armour_bundle/selected_item"), ArmourBundleSelectedItemModel.Unbaked.CODEC);
-        BooleanProperties.ID_MAPPER.put(ArmourBundles.id("armour_bundle/has_selected_item"), ArmourBundleHasSelectedItemProperty.CODEC);
+        ItemModels.ID_MAPPER.put(ArmourBundles.id("armour_bundle/selected_item"), ArmourBundleSelectedItemModel.Unbaked.CODEC);
+        ConditionalItemModelProperties.ID_MAPPER.put(ArmourBundles.id("armour_bundle/has_selected_item"), ArmourBundleHasSelectedItemProperty.CODEC);
         //ModelLoadingPlugin.register(ctx -> ctx..addModels(ArmourBundles.OPEN_FRONT_TEXTURE, ArmourBundles.OPEN_BACK_TEXTURE));
     }
 }

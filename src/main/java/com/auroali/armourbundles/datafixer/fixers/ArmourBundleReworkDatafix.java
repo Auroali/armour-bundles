@@ -5,7 +5,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.datafixer.TypeReferences;
+import net.minecraft.util.datafix.fixes.References;
 
 public class ArmourBundleReworkDatafix extends DataFix {
     public ArmourBundleReworkDatafix(Schema outputSchema, boolean changesType) {
@@ -29,8 +29,8 @@ public class ArmourBundleReworkDatafix extends DataFix {
     protected TypeRewriteRule makeRule() {
         return this.writeFixAndRead(
           "Update Armour Bundle Components",
-          this.getInputSchema().getType(TypeReferences.ITEM_STACK),
-          this.getOutputSchema().getType(TypeReferences.ITEM_STACK),
+          this.getInputSchema().getType(References.ITEM_STACK),
+          this.getOutputSchema().getType(References.ITEM_STACK),
           dynamic -> {
               if (!dynamic.get("id").asString().resultOrPartial().map(s -> s.equals("armourbundles:armour_bundle")).orElse(false))
                   return dynamic;

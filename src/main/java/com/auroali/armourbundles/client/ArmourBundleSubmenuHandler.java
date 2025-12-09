@@ -5,56 +5,56 @@ import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent
 import com.auroali.armourbundles.common.items.ArmourBundleItem;
 import com.auroali.armourbundles.common.network.ArmourBundleScrollC2S;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.tooltip.TooltipSubmenuHandler;
-import net.minecraft.client.input.Scroller;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.ScrollWheelHandler;
+import net.minecraft.client.gui.ItemSlotMouseAction;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Vector2i;
 
-public class ArmourBundleSubmenuHandler implements TooltipSubmenuHandler {
-    protected final MinecraftClient client;
-    protected final Scroller scroller;
+public class ArmourBundleSubmenuHandler implements ItemSlotMouseAction {
+    protected final Minecraft client;
+    protected final ScrollWheelHandler scroller;
 
-    public ArmourBundleSubmenuHandler(MinecraftClient client) {
+    public ArmourBundleSubmenuHandler(Minecraft client) {
         this.client = client;
-        this.scroller = new Scroller();
+        this.scroller = new ScrollWheelHandler();
     }
 
     @Override
-    public boolean isApplicableTo(Slot slot) {
-        return slot.getStack().contains(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
+    public boolean matches(Slot slot) {
+        return slot.getItem().has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
     }
 
     @Override
-    public boolean onScroll(double horizontal, double vertical, int slotId, ItemStack item) {
+    public boolean onMouseScrolled(double horizontal, double vertical, int slotId, ItemStack item) {
         ArmourBundleContentsComponent component = item.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS);
         int size = component.getStacks().size();
         if (size == 0)
             return false;
 
-        Vector2i scroll = this.scroller.update(horizontal, vertical);
+        Vector2i scroll = this.scroller.onMouseScroll(horizontal, vertical);
         int amount = scroll.y == 0 ? -scroll.x : scroll.y;
         if (amount == 0)
             return true;
 
         int selectedIndex = component.getSelected();
-        int newIndex = Scroller.scrollCycling(amount, selectedIndex, size);
+        int newIndex = ScrollWheelHandler.getNextScrollWheelSelection(amount, selectedIndex, size);
         if (newIndex != selectedIndex)
             this.sendPacket(slotId, newIndex, item);
         return true;
     }
 
     @Override
-    public void reset(Slot slot) {
-        this.sendPacket(slot.id, -1, slot.getStack());
+    public void onStopHovering(Slot slot) {
+        this.sendPacket(slot.index, -1, slot.getItem());
     }
 
     @Override
-    public void onMouseClick(Slot slot, SlotActionType actionType) {
-        if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP)
-            this.reset(slot);
+    public void onSlotClicked(Slot slot, ClickType actionType) {
+        if (actionType == ClickType.QUICK_MOVE || actionType == ClickType.SWAP)
+            this.onStopHovering(slot);
     }
 
     private void sendPacket(int slotId, int newIndex, ItemStack stack) {
