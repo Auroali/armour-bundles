@@ -72,7 +72,7 @@ public class ArmourBundles implements ModInitializer {
 
         ServerPlayNetworking.registerGlobalReceiver(CycleEquippedC2S.ID, (packet, ctx) -> {
             int index = ArmourBundleItem.getEquippedBundleIndex(ctx.player());
-            ItemStack bundle = packet.useNext() ? ArmourBundleItem.getNextArmourBundle(ctx.player(), index) : ArmourBundleItem.getPreviousArmourBundle(ctx.player(), index);
+            ItemStack bundle = ArmourBundleItem.findNextBundle(ctx.player(), index, packet.useNext());
             if (bundle.isEmpty())
                 return;
 

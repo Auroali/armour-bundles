@@ -2,7 +2,10 @@ package com.auroali.armourbundles.common.items;
 
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
+
 import java.util.Optional;
+
+import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -282,6 +285,7 @@ public class ArmourBundleItem extends Item {
      * @param index  the starting index
      * @return the next armour bundle, or empty if none was found
      */
+    @Deprecated(forRemoval = true)
     public static ItemStack getNextArmourBundle(Player entity, int index) {
         int start = index == -1 ? 0 : index;
         for (int i = start + 1; i < entity.getInventory().getNonEquipmentItems().size(); i++) {
@@ -299,6 +303,7 @@ public class ArmourBundleItem extends Item {
      * @param index  the starting index
      * @return the previous armour bundle, or empty if none was found
      */
+    @Deprecated(forRemoval = true)
     public static ItemStack getPreviousArmourBundle(Player entity, int index) {
         int start = index == -1 ? entity.getInventory().getNonEquipmentItems().size() - 1 : index;
         for (int i = start - 1; i >= 0; i--) {
@@ -306,6 +311,32 @@ public class ArmourBundleItem extends Item {
             if (stack.has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty())
                 return stack;
         }
+        return ItemStack.EMPTY;
+    }
+
+    /**
+     * Locates the next non-empty armour bundle in a player's inventory
+     *
+     * @param player        the player to search
+     * @param startIndex    the index to start from
+     * @param searchForward whether to search forward or backwards
+     * @return the found item stack, or an empty one if nothing was found
+     */
+    public static ItemStack findNextBundle(Player player, int startIndex, boolean searchForward) {
+        NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
+        if (startIndex == -1)
+            startIndex = searchForward ? 0 : items.size() - 1;
+
+        for (int i = 1; i < items.size(); i++) {
+            int currentIndex = searchForward
+              ? (startIndex + i) % items.size()
+              : Math.abs((startIndex - i) % items.size());
+            ItemStack stack = items.get(currentIndex);
+            if (stack.has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty()) {
+                return stack;
+            }
+        }
+
         return ItemStack.EMPTY;
     }
 

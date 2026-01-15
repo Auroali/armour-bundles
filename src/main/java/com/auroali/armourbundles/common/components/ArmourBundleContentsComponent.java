@@ -5,10 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -22,20 +19,34 @@ public class ArmourBundleContentsComponent implements TooltipComponent {
     public static final int MAX_STACKS = 4;
     public static final EnumSet<EquipmentSlot> VALID_SLOTS = EnumSet.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
     public static final ArmourBundleContentsComponent DEFAULT = new ArmourBundleContentsComponent(List.of(), new EnumMap<>(EquipmentSlot.class), -1);
+    // codec for the bound items map
+    public static final Codec<EnumMap<EquipmentSlot, ItemStack>> BOUND_ITEMS_CODEC = Codec.unboundedMap(EquipmentSlot.CODEC, ItemStack.CODEC)
+      .xmap(EnumMap::new, Function.identity())
+      .validate(map -> {
+          for (EquipmentSlot slot : map.keySet()) {
+              if (!VALID_SLOTS.contains(slot)) {
+                  EnumMap<EquipmentSlot, ItemStack> newMap = new EnumMap<>(EquipmentSlot.class);
+                  map.forEach((k, v) -> {
+                      if (VALID_SLOTS.contains(k))
+                          newMap.put(k, v);
+                  });
+                  return DataResult.error(
+                    () -> "Invalid slot " + slot + " for bound item",
+                    newMap
+                  );
+              }
+          }
+          return DataResult.success(map);
+      });
+    
+    // codec for the contents themselves
     public static final Codec<ArmourBundleContentsComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
       ItemStack.CODEC.listOf().fieldOf("stacks").forGetter(ArmourBundleContentsComponent::getStacks),
-      Codec.unboundedMap(EquipmentSlot.CODEC, ItemStack.CODEC)
-        .xmap(EnumMap::new, Function.identity())
-        .validate(map -> {
-            for (EquipmentSlot slot : map.keySet()) {
-                if (!VALID_SLOTS.contains(slot))
-                    return DataResult.error(() -> "Invalid slot " + slot + " for bound item");
-            }
-            return DataResult.success(map);
-        })
+      BOUND_ITEMS_CODEC
         .optionalFieldOf("boundItems", DEFAULT.boundEquipment)
         .forGetter(ArmourBundleContentsComponent::getBoundEquipment)
     ).apply(instance, ArmourBundleContentsComponent::new));
+
     public static final StreamCodec<RegistryFriendlyByteBuf, ArmourBundleContentsComponent> PACKET_CODEC = StreamCodec.composite(
       ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()),
       ArmourBundleContentsComponent::getStacks,
