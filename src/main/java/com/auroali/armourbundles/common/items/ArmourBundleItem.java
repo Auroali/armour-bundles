@@ -325,12 +325,17 @@ public class ArmourBundleItem extends Item {
     public static ItemStack findNextBundle(Player player, int startIndex, boolean searchForward) {
         NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
         if (startIndex == -1)
-            startIndex = searchForward ? 0 : items.size() - 1;
+            startIndex = searchForward ? -1 : items.size();
 
         for (int i = 1; i < items.size(); i++) {
-            int currentIndex = searchForward
-              ? (startIndex + i) % items.size()
-              : Math.abs((startIndex - i) % items.size());
+            int currentIndex;
+            if (searchForward)
+                currentIndex = (startIndex + i) % items.size();
+            else {
+                currentIndex = startIndex - i;
+                if (currentIndex < 0)
+                    currentIndex = items.size() + currentIndex;
+            }
             ItemStack stack = items.get(currentIndex);
             if (stack.has(ArmourBundles.ARMOUR_BUNDLE_CONTENTS) && !stack.get(ArmourBundles.ARMOUR_BUNDLE_CONTENTS).isEmpty()) {
                 return stack;

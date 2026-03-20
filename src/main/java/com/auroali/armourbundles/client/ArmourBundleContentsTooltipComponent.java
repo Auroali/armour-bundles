@@ -1,7 +1,9 @@
 package com.auroali.armourbundles.client;
 
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
+
 import java.util.List;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -74,7 +76,7 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
         if (this.contents.getBoundEquipment().isEmpty())
             return;
 
-        context.drawWordWrap(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 16777215);
+        context.drawWordWrap(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 0xffffffff);
 
         int index = 0;
         for (ItemStack stack : this.contents.getBoundEquipment().values()) {
@@ -100,11 +102,11 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
         context.blitSprite(RenderPipelines.GUI_TEXTURED, this.getProgressBarTexture(), x + 1, y, this.getProgressBarWidth(), 13);
         context.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_PROGRESS_BAR_BORDER_TEXTURE, x, y, 96, 13);
         if (this.contents.getStacks().isEmpty()) {
-            context.drawCenteredString(renderer, BUNDLE_EMPTY, x + 48, y + 3, 16777215);
+            context.drawCenteredString(renderer, BUNDLE_EMPTY, x + 48, y + 3, 0xffffffff);
         }
 
         if (this.contents.getStacks().size() >= ArmourBundleContentsComponent.MAX_STACKS) {
-            context.drawCenteredString(renderer, BUNDLE_FULL, x + 48, y + 3, 16777215);
+            context.drawCenteredString(renderer, BUNDLE_FULL, x + 48, y + 3, 0xffffffff);
         }
     }
 
@@ -117,7 +119,7 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
     }
 
     public void drawEmpty(Font renderer, int x, int y, int width, int height, GuiGraphics context) {
-        context.drawWordWrap(renderer, BUNDLE_EMPTY_DESCRIPTION, x + this.getXMargin(width), y, 96, 0xaaaaaa);
+        context.drawWordWrap(renderer, BUNDLE_EMPTY_DESCRIPTION, x + this.getXMargin(width), y, 96, 0xffaaaaaa);
         this.drawProgressBar(renderer, context, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 4);
         this.drawBoundItems(context, renderer, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 17);
     }
