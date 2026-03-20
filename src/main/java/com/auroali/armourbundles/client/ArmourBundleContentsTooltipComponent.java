@@ -1,9 +1,8 @@
 package com.auroali.armourbundles.client;
 
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
-import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -11,6 +10,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 // basically just BundleTooltipComponent but for Armour Bundles
 public class ArmourBundleContentsTooltipComponent implements ClientTooltipComponent {
@@ -32,35 +35,46 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
     }
 
     @Override
-    public void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics context) {
+    public void extractImage(@NonNull Font font, int x, int y, int w, int h, @NonNull GuiGraphicsExtractor graphics) {
         if (this.contents.isEmpty()) {
-            this.drawEmpty(textRenderer, x, y, width, height, context);
-            return;
+            this.extractEmpty(font, x, y, w, graphics);
+        } else {
+            this.extractNonEmpty(font, x, y, w, graphics);
         }
-
-        int xOffset = x + this.getXMargin(width) + 96;
-
-        for (int i = 1; i <= 4; i++) {
-            int xPos = xOffset - i * 24;
-            if (this.contents.getStacks().size() >= i)
-                this.drawItem(textRenderer, context, xPos, y, i);
-        }
-
-        this.renderSelectedTooltip(textRenderer, context, x, y, width);
-        this.drawProgressBar(textRenderer, context, x + this.getXMargin(width), y + this.getRowsHeight() + 4);
-        this.drawBoundItems(context, textRenderer, x + this.getXMargin(width), y + this.getRowsHeight() + 17);
     }
 
-    private void renderSelectedTooltip(Font renderer, GuiGraphics context, int x, int y, int width) {
+    private void extractEmpty(Font textRenderer, int x, int y, int width, GuiGraphicsExtractor graphics) {
+        int left = x + getXMargin(width);
+        graphics.textWithWordWrap(textRenderer, BUNDLE_EMPTY_DESCRIPTION, left, y, 96, 0xffaaaaaa);
+        this.extractProgressBar(textRenderer, graphics, left, y + getEmptyHeight(textRenderer) + 4);
+        this.extractBoundItems(textRenderer, graphics, left, y + getEmptyHeight(textRenderer) + 17);
+    }
+
+    private void extractNonEmpty(Font textRenderer, int x, int y, int width, GuiGraphicsExtractor graphics) {
+        int left = x + this.getXMargin(width);
+        int itemOffset = left + 96;
+        for (int i = 1; i <= 4; i++) {
+            int xPos = itemOffset - i * 24;
+            if (this.contents.getStacks().size() >= i) {
+                this.extractItem(textRenderer, graphics, xPos, y, i);
+            }
+        }
+
+        this.extractSelectedTooltip(textRenderer, graphics, x, y, width);
+        this.extractProgressBar(textRenderer, graphics, left, y + this.getRowsHeight() + 4);
+        this.extractBoundItems(textRenderer, graphics, left, y + this.getRowsHeight() + 17);
+    }
+
+    private void extractSelectedTooltip(Font renderer, GuiGraphicsExtractor graphics, int x, int y, int width) {
         if (!this.contents.hasSelected())
             return;
 
-        ItemStack selected = this.contents.getSelectedStack();
+        ItemStack selected = this.contents.getSelectedStack().create();
         Component name = selected.getStyledHoverName();
         int textWidth = renderer.width(name.getVisualOrderText());
         int xPos = x + width / 2 - 12;
         ClientTooltipComponent component = ClientTooltipComponent.create(name.getVisualOrderText());
-        context.renderTooltip(
+        graphics.tooltip(
           renderer,
           List.of(component),
           xPos - textWidth / 2,
@@ -70,41 +84,41 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
         );
     }
 
-    private void drawBoundItems(GuiGraphics context, Font textRenderer, int x, int y) {
+    private void extractBoundItems(Font textRenderer, GuiGraphicsExtractor graphics, int x, int y) {
         if (this.contents.getBoundEquipment().isEmpty())
             return;
 
-        context.drawWordWrap(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 16777215);
+        graphics.textWithWordWrap(textRenderer, BUNDLE_BOUND_ITEMS_DESCRIPTION, x, y + 2, 96, 16777215);
 
         int index = 0;
-        for (ItemStack stack : this.contents.getBoundEquipment().values()) {
-            context.renderItem(stack, x + 4 + index * 24, y + this.getBoundDescriptionHeight(textRenderer) + 6);
+        for (ItemStackTemplate stack : this.contents.getBoundEquipment().values()) {
+            graphics.item(stack.create(), x + 4 + index * 24, y + this.getBoundDescriptionHeight(textRenderer) + 6);
             index++;
         }
     }
 
-    private void drawItem(Font renderer, GuiGraphics context, int x, int y, int index) {
+    private void extractItem(Font renderer, GuiGraphicsExtractor graphics, int x, int y, int index) {
         int stackIndex = this.contents.getStacks().size() - index;
-        ItemStack stack = this.contents.getStacks().get(stackIndex);
+        ItemStackTemplate stack = this.contents.getStacks().get(stackIndex);
         if (stackIndex == this.contents.getSelected())
-            context.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_HIGHLIGHT_BACK_TEXTURE, x, y, 24, 24);
-        else context.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_BACKGROUND_TEXTURE, x, y, 24, 24);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_HIGHLIGHT_BACK_TEXTURE, x, y, 24, 24);
+        else graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_BACKGROUND_TEXTURE, x, y, 24, 24);
 
-        context.renderItem(stack, x + 4, y + 4, index);
-        context.renderItemDecorations(renderer, stack, x + 4, y + 4);
+        graphics.item(stack.create(), x + 4, y + 4, index);
+        graphics.itemDecorations(renderer, stack.create(), x + 4, y + 4);
         if (stackIndex == this.contents.getSelected())
-            context.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_HIGHLIGHT_FRONT_TEXTURE, x, y, 24, 24);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_SLOT_HIGHLIGHT_FRONT_TEXTURE, x, y, 24, 24);
     }
 
-    private void drawProgressBar(Font renderer, GuiGraphics context, int x, int y) {
-        context.blitSprite(RenderPipelines.GUI_TEXTURED, this.getProgressBarTexture(), x + 1, y, this.getProgressBarWidth(), 13);
-        context.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_PROGRESS_BAR_BORDER_TEXTURE, x, y, 96, 13);
+    private void extractProgressBar(Font renderer, GuiGraphicsExtractor graphics, int x, int y) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getProgressBarTexture(), x + 1, y, this.getProgressBarWidth(), 13);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUNDLE_PROGRESS_BAR_BORDER_TEXTURE, x, y, 96, 13);
         if (this.contents.getStacks().isEmpty()) {
-            context.drawCenteredString(renderer, BUNDLE_EMPTY, x + 48, y + 3, 16777215);
+            graphics.centeredText(renderer, BUNDLE_EMPTY, x + 48, y + 3, 0xFFFFFFFF);
         }
 
         if (this.contents.getStacks().size() >= ArmourBundleContentsComponent.MAX_STACKS) {
-            context.drawCenteredString(renderer, BUNDLE_FULL, x + 48, y + 3, 16777215);
+            graphics.centeredText(renderer, BUNDLE_FULL, x + 48, y + 3, 0xFFFFFFFF);
         }
     }
 
@@ -114,12 +128,6 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
 
     private int getProgressBarWidth() {
         return (int) Math.clamp(94 * (this.contents.getStacks().size() / (double) ArmourBundleContentsComponent.MAX_STACKS), 0, 94);
-    }
-
-    public void drawEmpty(Font renderer, int x, int y, int width, int height, GuiGraphics context) {
-        context.drawWordWrap(renderer, BUNDLE_EMPTY_DESCRIPTION, x + this.getXMargin(width), y, 96, 0xaaaaaa);
-        this.drawProgressBar(renderer, context, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 4);
-        this.drawBoundItems(context, renderer, x + this.getXMargin(width), y + this.getEmptyHeight(renderer) + 17);
     }
 
     protected int getEmptyHeight(Font renderer) {
@@ -147,12 +155,12 @@ public class ArmourBundleContentsTooltipComponent implements ClientTooltipCompon
     }
 
     @Override
-    public int getHeight(Font textRenderer) {
+    public int getHeight(@NonNull Font textRenderer) {
         return this.contents.isEmpty() ? this.getEmptyHeight(textRenderer) + this.getBoundRowHeight(textRenderer) + 21 : this.getRowsHeight() + this.getBoundRowHeight(textRenderer) + 21;
     }
 
     @Override
-    public int getWidth(Font textRenderer) {
+    public int getWidth(@NonNull Font textRenderer) {
         return 96;
     }
 }

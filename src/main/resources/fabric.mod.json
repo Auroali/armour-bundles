@@ -25,11 +25,8 @@
     "fabric-datagen": [
       "com.auroali.armourbundles.ArmourBundlesDataGenerator"
     ],
-    "dfuhooks-modify-schemas": [
+    "dfuhooks-init": [
       "com.auroali.armourbundles.datafixer.ABDatafixer"
-    ],
-    "dfuhooks-item-component": [
-      "com.auroali.armourbundles.datafixer.ABItemComponentFix"
     ]
   },
   "mixins": [
@@ -37,8 +34,8 @@
   ],
   "depends": {
     "fabricloader": ">=0.18.1",
-    "minecraft": "~1.21.11",
-    "java": ">=21",
+    "minecraft": "~26.1-rc.2",
+    "java": ">=25",
     "fabric-api": "*",
     "dfuhooks": ">=1.0.0"
   }

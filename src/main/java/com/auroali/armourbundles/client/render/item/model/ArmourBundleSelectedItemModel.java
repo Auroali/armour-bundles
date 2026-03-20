@@ -9,16 +9,20 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4fc;
+import org.jspecify.annotations.NonNull;
 
 public class ArmourBundleSelectedItemModel implements ItemModel {
     static final ArmourBundleSelectedItemModel INSTANCE = new ArmourBundleSelectedItemModel();
 
     @Override
     public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver resolver, ItemDisplayContext displayContext, @Nullable ClientLevel world, @Nullable ItemOwner heldItemContext, int seed) {
-        ItemStack inner = ArmourBundleItem.getSelectedStack(stack);
-        if (!inner.isEmpty())
-            resolver.appendItemLayers(state, inner, displayContext, world, heldItemContext, seed);
+        state.appendModelIdentityElement(this);
+        ItemStackTemplate inner = ArmourBundleItem.getSelectedStack(stack);
+        if (inner != null)
+            resolver.appendItemLayers(state, inner.create(), displayContext, world, heldItemContext, seed);
     }
 
     public record Unbaked() implements ItemModel.Unbaked {
@@ -30,12 +34,12 @@ public class ArmourBundleSelectedItemModel implements ItemModel {
         }
 
         @Override
-        public ItemModel bake(BakingContext context) {
+        public @NonNull ItemModel bake(@NonNull BakingContext context, @NonNull Matrix4fc transform) {
             return ArmourBundleSelectedItemModel.INSTANCE;
         }
 
         @Override
-        public void resolveDependencies(Resolver resolver) {
+        public void resolveDependencies(@NonNull Resolver resolver) {
 
         }
     }

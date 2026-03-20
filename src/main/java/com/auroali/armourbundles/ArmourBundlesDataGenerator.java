@@ -5,10 +5,10 @@ import com.auroali.armourbundles.client.render.item.property.ArmourBundleHasSele
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.model.ItemModelUtils;
@@ -27,6 +27,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Items;
+import org.jspecify.annotations.NonNull;
+
 import java.util.concurrent.CompletableFuture;
 
 public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
@@ -40,12 +42,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ABLangGen extends FabricLanguageProvider {
-        protected ABLangGen(FabricDataOutput dataGenerator, CompletableFuture<HolderLookup.Provider> lookup) {
+        protected ABLangGen(FabricPackOutput dataGenerator, CompletableFuture<HolderLookup.Provider> lookup) {
             super(dataGenerator, lookup);
         }
 
         @Override
-        public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
+        public void generateTranslations(HolderLookup.@NonNull Provider registryLookup, TranslationBuilder translationBuilder) {
             translationBuilder.add(ArmourBundles.ARMOUR_BUNDLE, "Armor Bundle");
             translationBuilder.add("item.armourprofiles.armour_bundle.profile_set", "Set profile %d!");
             translationBuilder.add("item.armourprofiles.armour_bundle.profile_selected", "Selected profile %d!");
@@ -60,12 +62,12 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ABModelGen extends FabricModelProvider {
-        public ABModelGen(FabricDataOutput dataGenerator) {
+        public ABModelGen(FabricPackOutput dataGenerator) {
             super(dataGenerator);
         }
 
         @Override
-        public void generateBlockStateModels(BlockModelGenerators blockStateModelGenerator) {
+        public void generateBlockStateModels(@NonNull BlockModelGenerators blockStateModelGenerator) {
 
         }
 
@@ -96,17 +98,17 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ABRecipeProvider extends FabricRecipeProvider {
-        public ABRecipeProvider(FabricDataOutput dataGenerator, CompletableFuture<HolderLookup.Provider> lookup) {
+        public ABRecipeProvider(FabricPackOutput dataGenerator, CompletableFuture<HolderLookup.Provider> lookup) {
             super(dataGenerator, lookup);
         }
 
         @Override
-        public RecipeProvider createRecipeProvider(HolderLookup.Provider reg, RecipeOutput exporter) {
+        public @NonNull RecipeProvider createRecipeProvider(HolderLookup.@NonNull Provider reg, @NonNull RecipeOutput exporter) {
             return new ABRecipeGenerator(reg, exporter);
         }
 
         @Override
-        public String getName() {
+        public @NonNull String getName() {
             return "Armour Bundles Recipe";
         }
     }
@@ -135,13 +137,13 @@ public class ArmourBundlesDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class ABTagGenerator extends FabricTagProvider.ItemTagProvider {
-        public ABTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static class ABTagGenerator extends FabricTagsProvider.ItemTagsProvider {
+        public ABTagGenerator(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected void addTags(HolderLookup.Provider arg) {
+        protected void addTags(HolderLookup.@NonNull Provider arg) {
             this.valueLookupBuilder(ArmourBundles.VALID_ARMOUR_BUNDLE_ITEMS)
               .add(
                 Items.ELYTRA,

@@ -8,10 +8,11 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ScrollWheelHandler;
 import net.minecraft.client.gui.ItemSlotMouseAction;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector2i;
+import org.jspecify.annotations.NonNull;
 
 public class ArmourBundleSubmenuHandler implements ItemSlotMouseAction {
     protected final Minecraft client;
@@ -52,8 +53,8 @@ public class ArmourBundleSubmenuHandler implements ItemSlotMouseAction {
     }
 
     @Override
-    public void onSlotClicked(Slot slot, ClickType actionType) {
-        if (actionType == ClickType.QUICK_MOVE || actionType == ClickType.SWAP)
+    public void onSlotClicked(@NonNull Slot slot, @NonNull ContainerInput containerInput) {
+        if (containerInput == ContainerInput.QUICK_MOVE || containerInput == ContainerInput.SWAP)
             this.onStopHovering(slot);
     }
 

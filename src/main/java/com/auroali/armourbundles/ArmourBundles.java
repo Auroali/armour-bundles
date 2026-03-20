@@ -5,15 +5,15 @@ import com.auroali.armourbundles.common.items.ArmourBundleItem;
 import com.auroali.armourbundles.common.network.ArmourBundleScrollC2S;
 import com.auroali.armourbundles.common.network.CycleEquippedC2S;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -51,13 +51,13 @@ public class ArmourBundles implements ModInitializer {
         Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, id("armour_bundle_contents"), ARMOUR_BUNDLE_CONTENTS);
         Registry.register(BuiltInRegistries.ITEM, ARMOUR_BUNDLE_KEY, ARMOUR_BUNDLE);
 
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT)
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.COMBAT)
           .register(content -> {
               content.accept(ARMOUR_BUNDLE);
           });
 
-        PayloadTypeRegistry.playC2S().register(CycleEquippedC2S.ID, CycleEquippedC2S.CODEC);
-        PayloadTypeRegistry.playC2S().register(ArmourBundleScrollC2S.ID, ArmourBundleScrollC2S.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(CycleEquippedC2S.ID, CycleEquippedC2S.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ArmourBundleScrollC2S.ID, ArmourBundleScrollC2S.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(ArmourBundleScrollC2S.ID, (packet, ctx) -> {
             AbstractContainerMenu handler = ctx.player().containerMenu;
