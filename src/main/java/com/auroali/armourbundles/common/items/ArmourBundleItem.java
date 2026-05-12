@@ -6,6 +6,8 @@ import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent
 import java.util.Optional;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -257,7 +259,7 @@ public class ArmourBundleItem extends Item {
         for (EquipmentSlot slot : ArmourBundleContentsComponent.VALID_SLOTS) {
             ItemStack equipped = entity.getItemBySlot(slot);
             ItemStack bound = component.getBoundEquipment().getOrDefault(slot, ItemStack.EMPTY);
-            if (!ItemStack.matches(equipped, bound))
+            if (!ItemStack.matchesIgnoringComponents(equipped, bound, ArmourBundleItem::shouldIgnoreForEquipmentComparision))
                 return false;
         }
         return true;
@@ -389,5 +391,9 @@ public class ArmourBundleItem extends Item {
             entity.spawnAtLocation(world, stack);
             entity.setItemSlot(slot, ItemStack.EMPTY);
         }
+    }
+
+    private static boolean shouldIgnoreForEquipmentComparision(DataComponentType<?> type) {
+        return type == DataComponents.DAMAGE;
     }
 }
