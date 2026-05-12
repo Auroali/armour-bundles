@@ -3,6 +3,8 @@ package com.auroali.armourbundles.common.items;
 import com.auroali.armourbundles.ArmourBundles;
 import com.auroali.armourbundles.common.components.ArmourBundleContentsComponent;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -260,7 +262,7 @@ public class ArmourBundleItem extends Item {
             if (bound == null)
                 return equipped.isEmpty();
 
-            if (!ItemStack.matches(equipped, bound.create()))
+            if (!ItemStack.matchesIgnoringComponents(equipped, bound.create(), ArmourBundleItem::shouldIgnoreForEquipmentComparision))
                 return false;
         }
         return true;
@@ -392,5 +394,9 @@ public class ArmourBundleItem extends Item {
             entity.spawnAtLocation(world, stack);
             entity.setItemSlot(slot, ItemStack.EMPTY);
         }
+    }
+
+    private static boolean shouldIgnoreForEquipmentComparision(DataComponentType<?> type) {
+        return type == DataComponents.DAMAGE;
     }
 }
